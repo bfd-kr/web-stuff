@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Cost Calculator</title>
+    <style>
+        :root {
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --container-bg: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-tertiary: #555;
+            --border-color: #e0e0e0;
+            --input-bg: #ffffff;
+            --visual-bg: #f9fafb;
+        }
+
+        body.dark-mode {
+            --bg-gradient-1: #1e293b;
+            --bg-gradient-2: #0f172a;
+            --container-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --visual-bg: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .money-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .money {
+            position: absolute;
+            animation: fall linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .theme-btn.active {
+            background: #667eea;
+        }
+
+        .sound-toggle {
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .sound-toggle.active {
+            background: #10b981;
+            color: white;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .presets {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .preset-btn .preset-detail {
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .inputs-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 700px) {
+            .inputs-row {
+                grid-template-columns: 1fr 1fr 2fr;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group.compact {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #dc2626;
+        }
+
+        .btn-reset {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #4b5563;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-prefix {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-prefix input {
+            padding-left: 28px;
+        }
+
+        .input-prefix::before {
+            content: '$';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .people-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            min-height: 40px;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .person-icon {
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+
+        .person-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .person-icon.new {
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .meeting-status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .meeting-status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-small {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-large {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-huge {
+            background: #fce7f3;
+            color: #831843;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .progress-ring {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        .ring-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-circle-bg {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 8;
+        }
+
+        .ring-circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        .ring-label {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .ring-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        .cost-metrics {
+            background: var(--visual-bg);
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .comparisons {
+            background: var(--visual-bg);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .comparison-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .comparison-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: var(--container-bg);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .cost-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .cost-display.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            animation: glow 2s infinite;
+        }
+
+        .cost-display.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: glow 1.5s infinite;
+        }
+
+        .cost-display.extreme {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            animation: intensePulse 1s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes intensePulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        .cost-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cost-amount {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .achievements {
+            padding: 15px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+        }
+
+        .achievement-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .achievement-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .achievement-badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .achievement-badge.locked {
+            background: var(--border-color);
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .achievement-badge.unlocked {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: badgePop 0.5s ease-out;
+        }
+
+        @keyframes badgePop {
+            0% {
+                transform: scale(0) rotate(-180deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .keyboard-shortcuts {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .keyboard-shortcuts kbd {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="money-container" id="moneyContainer"></div>
+
+    <div class="container">
+        <div class="header-controls">
+            <div class="theme-toggle" id="themeToggle">
+                <button class="theme-btn active" data-theme="light">☀️</button>
+                <button class="theme-btn" data-theme="dark">🌙</button>
+            </div>
+            <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
+        </div>
+
+        <h1>Meeting Cost Calculator</h1>
+        <p class="subtitle">Track how much your meetings really cost</p>
+
+        <div class="presets">
+            <button class="preset-btn" data-preset="standup">
+                Daily Standup
+                <span class="preset-detail">10 people × 15min</span>
+            </button>
+            <button class="preset-btn" data-preset="planning">
+                Sprint Planning
+                <span class="preset-detail">8 people × 2hr</span>
+            </button>
+            <button class="preset-btn" data-preset="allhands">
+                All Hands
+                <span class="preset-detail">50 people × 1hr</span>
+            </button>
+            <button class="preset-btn" data-preset="oneone">
+                1:1 Meeting
+                <span class="preset-detail">2 people × 30min</span>
+            </button>
+        </div>
+
+        <div class="main-grid">
+            <div class="input-section">
+                <div class="inputs-row">
+                    <div class="input-group compact">
+                        <label for="salary">Blended Hourly Rate</label>
+                        <div class="input-prefix">
+                            <input type="number" id="salary" value="80" min="0" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="input-group compact">
+                        <label for="people">Number of People</label>
+                        <input type="number" id="people" value="1" min="1" step="1">
+                    </div>
+
+                    <div class="input-group compact">
+                        <label for="time">Time (HH:MM:SS)</label>
+                        <input type="text" id="time" value="00:00:00" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" placeholder="00:00:00">
+                        <div class="timer-controls">
+                            <button id="startBtn" class="btn-start">Start</button>
+                            <button id="stopBtn" class="btn-stop" disabled>Stop</button>
+                            <button id="resetBtn" class="btn-reset">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="people-visual" id="peopleVisual"></div>
+                <div class="meeting-status" id="meetingStatus"></div>
+
+                <div class="cost-display">
+                    <div class="cost-label">Total Meeting Cost</div>
+                    <div class="cost-amount" id="cost">$0.00</div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="progress-ring">
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="timeRing" cx="40" cy="40" r="32"
+                                    stroke="#667eea" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>Time</div>
+                            <div class="ring-value" id="timeRingValue">0m</div>
+                        </div>
+                    </div>
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="peopleRing" cx="40" cy="40" r="32"
+                                    stroke="#10b981" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>People</div>
+                            <div class="ring-value" id="peopleRingValue">0</div>
+                        </div>
+                    </div>
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="costRing" cx="40" cy="40" r="32"
+                                    stroke="#f59e0b" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>Cost</div>
+                            <div class="ring-value" id="costRingValue">$0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cost-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Per Second</div>
+                        <div class="metric-value" id="perSecond">$0.00</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Per Minute</div>
+                        <div class="metric-value" id="perMinute">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="comparisons" id="comparisons">
+                    <div class="comparison-title">💭 This meeting could buy...</div>
+                    <div id="comparisonList"></div>
+                </div>
+
+                <div class="achievements">
+                    <div class="achievement-title">🏆 Achievements</div>
+                    <div class="achievement-list" id="achievementList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <strong>Shortcuts:</strong>
+            <kbd>Space</kbd> Start/Stop |
+            <kbd>R</kbd> Reset |
+            <kbd>+</kbd>/<kbd>-</kbd> People |
+            <kbd>D</kbd> Dark Mode
+        </div>
+    </div>
+
+    <script>
+        // State
+        let timerInterval = null;
+        let seconds = 0;
+        let soundEnabled = false;
+        let achievements = JSON.parse(localStorage.getItem('achievements') || '{}');
+        let moneyAnimationInterval = null;
+        let previousPeopleCount = 0;
+
+        // Elements
+        const salaryInput = document.getElementById('salary');
+        const peopleInput = document.getElementById('people');
+        const timeInput = document.getElementById('time');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const costDisplay = document.getElementById('cost');
+        const peopleVisual = document.getElementById('peopleVisual');
+        const meetingStatus = document.getElementById('meetingStatus');
+        const costDisplayContainer = document.querySelector('.cost-display');
+        const perSecond = document.getElementById('perSecond');
+        const perMinute = document.getElementById('perMinute');
+        const comparisonList = document.getElementById('comparisonList');
+        const achievementList = document.getElementById('achievementList');
+        const soundToggle = document.getElementById('soundToggle');
+        const themeToggle = document.getElementById('themeToggle');
+        const moneyContainer = document.getElementById('moneyContainer');
+
+        // Progress rings
+        const timeRing = document.getElementById('timeRing');
+        const peopleRing = document.getElementById('peopleRing');
+        const costRing = document.getElementById('costRing');
+        const timeRingValue = document.getElementById('timeRingValue');
+        const peopleRingValue = document.getElementById('peopleRingValue');
+        const costRingValue = document.getElementById('costRingValue');
+
+        // Achievement definitions
+        const achievementDefs = {
+            efficient: { emoji: '⚡', name: 'Efficient', condition: () => seconds < 1800 && seconds > 0 },
+            budget: { emoji: '💰', name: 'Budget Hero', condition: () => getCurrentCost() < 100 && seconds > 600 },
+            small: { emoji: '👥', name: 'Small Team', condition: () => parseInt(peopleInput.value) <= 3 },
+            quick: { emoji: '🏃', name: 'Quick Meet', condition: () => seconds <= 900 && seconds > 0 },
+            mega: { emoji: '🏢', name: 'Mega Meeting', condition: () => parseInt(peopleInput.value) >= 20 }
+        };
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTick() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 800;
+            gain.gain.value = 0.02;
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.02);
+        }
+
+        function playChing() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 1200;
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playWarning() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 400;
+            gain.gain.value = 0.05;
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.1);
+            setTimeout(() => {
+                const osc2 = audioContext.createOscillator();
+                osc2.connect(gain);
+                osc2.frequency.value = 400;
+                osc2.start();
+                osc2.stop(audioContext.currentTime + 0.1);
+            }, 100);
+        }
+
+        // Dark mode
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', (e) => {
+            if (e.target.classList.contains('theme-btn')) {
+                applyTheme(e.target.dataset.theme);
+            }
+        });
+
+        // Sound toggle
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            soundToggle.classList.toggle('active', soundEnabled);
+            if (soundEnabled) playChing();
+        });
+
+        // Money animation - scales with cost per second
+        function createMoney(costPerSecond) {
+            const money = document.createElement('div');
+            money.className = 'money';
+
+            // Scale size based on cost per second
+            let size = 24;
+            let emoji = '💵';
+
+            if (costPerSecond > 10) {
+                size = 48;
+                emoji = '💰';
+            } else if (costPerSecond > 5) {
+                size = 36;
+                emoji = '💸';
+            } else if (costPerSecond > 1) {
+                size = 30;
+                emoji = Math.random() > 0.5 ? '💵' : '💴';
+            }
+
+            money.textContent = emoji;
+            money.style.fontSize = size + 'px';
+            money.style.left = Math.random() * 100 + '%';
+            money.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+            moneyContainer.appendChild(money);
+            setTimeout(() => money.remove(), 4000);
+        }
+
+        function updateMoneyAnimation() {
+            const costPerSecond = getCurrentCost() / (seconds || 1);
+
+            if (moneyAnimationInterval) {
+                clearInterval(moneyAnimationInterval);
+                moneyAnimationInterval = null;
+            }
+
+            if (!timerInterval) return;
+
+            // Frequency scales with cost per second
+            let interval = 1000; // default 1 per second
+
+            if (costPerSecond > 10) {
+                interval = 100; // 10 per second
+            } else if (costPerSecond > 5) {
+                interval = 200; // 5 per second
+            } else if (costPerSecond > 2) {
+                interval = 400; // 2.5 per second
+            } else if (costPerSecond > 1) {
+                interval = 600; // 1.6 per second
+            }
+
+            moneyAnimationInterval = setInterval(() => createMoney(costPerSecond), interval);
+        }
+
+        function stopMoneyAnimation() {
+            if (moneyAnimationInterval) {
+                clearInterval(moneyAnimationInterval);
+                moneyAnimationInterval = null;
+            }
+        }
+
+        // Meeting presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                const presets = {
+                    standup: { people: 10, time: 900 },
+                    planning: { people: 8, time: 7200 },
+                    allhands: { people: 50, time: 3600 },
+                    oneone: { people: 2, time: 1800 }
+                };
+
+                const p = presets[preset];
+                peopleInput.value = p.people;
+                seconds = p.time;
+                timeInput.value = formatTime(seconds);
+                calculateCost();
+                playChing();
+            });
+        });
+
+        // Utilities
+        function parseTime(timeStr) {
+            const parts = timeStr.split(':');
+            if (parts.length !== 3) return 0;
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+            const secs = parseInt(parts[2]) || 0;
+            return hours * 3600 + minutes * 60 + secs;
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function getCurrentCost() {
+            const salary = parseFloat(salaryInput.value) || 0;
+            const people = parseInt(peopleInput.value) || 0;
+            const hours = seconds / 3600;
+            return salary * people * hours;
+        }
+
+        // Progress rings
+        function updateRing(ring, percentage, valueEl, displayValue) {
+            const circumference = 2 * Math.PI * 32;
+            const offset = circumference - (percentage / 100) * circumference;
+            ring.style.strokeDashoffset = offset;
+            valueEl.textContent = displayValue;
+        }
+
+        // People visual - only update if count changed
+        function updatePeopleVisual(count) {
+            if (count === previousPeopleCount) return;
+
+            const maxDisplay = 20;
+            peopleVisual.innerHTML = '';
+            const displayCount = Math.min(count, maxDisplay);
+
+            let emoji = '🧑';
+            if (count > 20) emoji = '👥';
+            if (count > 50) emoji = '🏢';
+
+            for (let i = 0; i < displayCount; i++) {
+                const person = document.createElement('span');
+                person.className = 'person-icon new';
+                person.textContent = emoji;
+                person.style.animationDelay = `${i * 0.05}s`;
+                peopleVisual.appendChild(person);
+            }
+
+            if (count > maxDisplay) {
+                const more = document.createElement('span');
+                more.className = 'person-icon new';
+                more.textContent = `+${count - maxDisplay}`;
+                more.style.fontSize = '16px';
+                more.style.fontWeight = 'bold';
+                more.style.color = '#666';
+                peopleVisual.appendChild(more);
+            }
+
+            previousPeopleCount = count;
+        }
+
+        // Meeting status
+        function updateMeetingStatus(count) {
+            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge');
+
+            let message = '';
+            let statusClass = '';
+
+            if (count <= 3) {
+                message = '✅ Great! Small meetings are efficient';
+                statusClass = 'status-small';
+            } else if (count <= 7) {
+                message = '⚠️ Getting larger... Is everyone necessary?';
+                statusClass = 'status-medium';
+            } else if (count <= 15) {
+                message = '🚨 Large meeting alert! Consider breaking into groups';
+                statusClass = 'status-large';
+            } else {
+                message = '💸 HUGE MEETING! This is costing serious money!';
+                statusClass = 'status-huge';
+            }
+
+            meetingStatus.textContent = message;
+            meetingStatus.classList.add('show', statusClass);
+        }
+
+        // Cost display styling
+        function updateCostDisplayStyle(people, cost) {
+            costDisplayContainer.classList.remove('warning', 'danger', 'extreme');
+
+            if (people > 15 || cost > 1000) {
+                costDisplayContainer.classList.add('extreme');
+                if (cost % 100 < 1 && cost > 100) playWarning();
+            } else if (people > 7 || cost > 500) {
+                costDisplayContainer.classList.add('danger');
+            } else if (people > 3 || cost > 200) {
+                costDisplayContainer.classList.add('warning');
+            }
+        }
+
+        // Comparisons
+        function updateComparisons(cost) {
+            const comparisons = [];
+
+            if (cost >= 5) comparisons.push(`☕ ${Math.floor(cost / 5)} lattes`);
+            if (cost >= 15) comparisons.push(`🍕 ${Math.floor(cost / 15)} pizzas`);
+            if (cost >= 50) comparisons.push(`📚 ${Math.floor(cost / 50)} books`);
+            if (cost >= 100) comparisons.push(`🎮 ${Math.floor(cost / 60)} video games`);
+            if (cost >= 500) comparisons.push(`✈️ ${Math.floor(cost / 200)} flight tickets`);
+
+            comparisonList.innerHTML = comparisons.slice(0, 3)
+                .map(c => `<div class="comparison-item">${c}</div>`)
+                .join('');
+        }
+
+        // Achievements
+        function updateAchievements() {
+            Object.keys(achievementDefs).forEach(key => {
+                const def = achievementDefs[key];
+                if (def.condition() && !achievements[key]) {
+                    achievements[key] = true;
+                    localStorage.setItem('achievements', JSON.stringify(achievements));
+                    playChing();
+                }
+            });
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            achievementList.innerHTML = Object.keys(achievementDefs).map(key => {
+                const def = achievementDefs[key];
+                const unlocked = achievements[key];
+                return `<div class="achievement-badge ${unlocked ? 'unlocked' : 'locked'}">
+                    ${def.emoji} ${def.name}
+                </div>`;
+            }).join('');
+        }
+
+        // Main calculation
+        function calculateCost() {
+            const salary = parseFloat(salaryInput.value) || 0;
+            const people = parseInt(peopleInput.value) || 0;
+            const hours = seconds / 3600;
+            const cost = salary * people * hours;
+
+            // Update main cost
+            costDisplay.textContent = `$${cost.toFixed(2)}`;
+
+            // Update metrics
+            const costPerSecond = (salary * people) / 3600;
+            const costPerMinute = (salary * people) / 60;
+            perSecond.textContent = `$${costPerSecond.toFixed(2)}`;
+            perMinute.textContent = `$${costPerMinute.toFixed(2)}`;
+
+            // Update rings
+            const minutes = Math.floor(seconds / 60);
+            updateRing(timeRing, Math.min((minutes / 120) * 100, 100), timeRingValue, `${minutes}m`);
+            updateRing(peopleRing, Math.min((people / 50) * 100, 100), peopleRingValue, people);
+            updateRing(costRing, Math.min((cost / 2000) * 100, 100), costRingValue, `$${Math.floor(cost)}`);
+
+            // Update other displays
+            updatePeopleVisual(people);
+            updateMeetingStatus(people);
+            updateCostDisplayStyle(people, cost);
+            updateComparisons(cost);
+            updateAchievements();
+
+            // Update money animation based on cost
+            if (timerInterval) {
+                updateMoneyAnimation();
+            }
+        }
+
+        // Timer functions
+        function startTimer() {
+            seconds = parseTime(timeInput.value);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            timeInput.disabled = true;
+
+            timerInterval = setInterval(() => {
+                seconds++;
+                timeInput.value = formatTime(seconds);
+                calculateCost();
+                playTick();
+            }, 1000);
+
+            updateMoneyAnimation();
+            calculateCost();
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            timeInput.disabled = false;
+            stopMoneyAnimation();
+            calculateCost();
+        }
+
+        function resetTimer() {
+            stopTimer();
+            seconds = 0;
+            timeInput.value = '00:00:00';
+            calculateCost();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger if typing in input
+            if (e.target.tagName === 'INPUT') return;
+
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    if (timerInterval) stopTimer();
+                    else startTimer();
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    resetTimer();
+                    break;
+                case '+':
+                case '=':
+                    e.preventDefault();
+                    peopleInput.value = parseInt(peopleInput.value) + 1;
+                    calculateCost();
+                    break;
+                case '-':
+                case '_':
+                    e.preventDefault();
+                    peopleInput.value = Math.max(1, parseInt(peopleInput.value) - 1);
+                    calculateCost();
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+                    break;
+            }
+        });
+
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        salaryInput.addEventListener('input', calculateCost);
+        peopleInput.addEventListener('input', calculateCost);
+
+        timeInput.addEventListener('input', (e) => {
+            if (!timerInterval) {
+                seconds = parseTime(e.target.value);
+                calculateCost();
+            }
+        });
+
+        timeInput.addEventListener('blur', (e) => {
+            if (!timerInterval) {
+                e.target.value = formatTime(seconds);
+            }
+        });
+
+        // Initialize
+        initTheme();
+        renderAchievements();
+        calculateCost();
+    </script>
+</body>
+</html>
