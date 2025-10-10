@@ -820,10 +820,10 @@
 
         // Achievement definitions
         const achievementDefs = {
-            efficient: { emoji: '⚡', name: 'Efficient', description: 'Keep meeting under 30 minutes', condition: () => seconds < 1800 && seconds > 0 },
+            efficient: { emoji: '⚡', name: 'Efficient', description: 'Keep meeting under 30 minutes', onComplete: true, condition: () => seconds < 1800 && seconds > 0 },
             budget: { emoji: '💰', name: 'Budget Hero', description: 'Keep cost under $100 for 10+ minute meeting', condition: () => getCurrentCost() < 100 && seconds > 600 },
             small: { emoji: '👥', name: 'Small Team', description: 'Meeting with 3 or fewer people', condition: () => parseInt(peopleInput.value) <= 3 && seconds > 0 },
-            quick: { emoji: '🏃', name: 'Quick Meet', description: 'Complete meeting in 15 minutes or less', condition: () => seconds <= 900 && seconds > 0 },
+            quick: { emoji: '🏃', name: 'Quick Meet', description: 'Complete meeting in 15 minutes or less', onComplete: true, condition: () => seconds <= 900 && seconds > 0 },
             mega: { emoji: '🏢', name: 'Mega Meeting', description: 'Meeting with 20 or more people', condition: () => parseInt(peopleInput.value) >= 20 && seconds > 0 }
         };
 
@@ -1106,13 +1106,34 @@
                 .join('');
         }
 
-        // Achievements
+        // Achievements - real-time during meeting
         function updateAchievements() {
             let hasNewAchievement = false;
 
             Object.keys(achievementDefs).forEach(key => {
                 const def = achievementDefs[key];
-                if (def.condition() && !achievements[key]) {
+                // Only check achievements that aren't marked as "onComplete"
+                if (!def.onComplete && def.condition() && !achievements[key]) {
+                    achievements[key] = true;
+                    playChing();
+                    hasNewAchievement = true;
+                }
+            });
+
+            // Only re-render if there's a new achievement
+            if (hasNewAchievement) {
+                renderAchievements();
+            }
+        }
+
+        // Check completion achievements (when meeting stops)
+        function checkCompletionAchievements() {
+            let hasNewAchievement = false;
+
+            Object.keys(achievementDefs).forEach(key => {
+                const def = achievementDefs[key];
+                // Only check achievements marked as "onComplete"
+                if (def.onComplete && def.condition() && !achievements[key]) {
                     achievements[key] = true;
                     playChing();
                     hasNewAchievement = true;
@@ -1195,6 +1216,7 @@
             stopBtn.disabled = true;
             timeInput.disabled = false;
             stopMoneyAnimation();
+            checkCompletionAchievements();
             calculateCost();
         }
 
