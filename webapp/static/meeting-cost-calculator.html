@@ -92,6 +92,25 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .header-controls h1 {
+            margin: 0;
+            font-size: 24px;
+            flex: 1;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .header-controls {
+                flex-wrap: wrap;
+            }
+            .header-controls h1 {
+                order: -1;
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
 
         .theme-toggle {
@@ -139,9 +158,6 @@
 
         h1 {
             color: var(--text-primary);
-            margin-bottom: 10px;
-            font-size: 28px;
-            text-align: center;
         }
 
         .subtitle {
@@ -685,10 +701,10 @@
                 <button class="theme-btn active" data-theme="light">☀️</button>
                 <button class="theme-btn" data-theme="dark">🌙</button>
             </div>
+            <h1>Meeting Cost Calculator</h1>
             <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
         </div>
 
-        <h1>Meeting Cost Calculator</h1>
         <p class="subtitle">Track how much your meetings really cost</p>
 
         <div class="presets">
