@@ -409,6 +409,11 @@
             animation: intensePulse 1s infinite;
         }
 
+        /* Disable animations when timer is stopped */
+        .meeting-status.status-stopped {
+            animation: none !important;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -538,6 +543,11 @@
         .cost-display.critical {
             background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
             animation: criticalPulse 0.8s infinite;
+        }
+
+        /* Disable cost display animations when timer is stopped */
+        .cost-display.cost-stopped {
+            animation: none !important;
         }
 
         @keyframes glow {
@@ -1175,7 +1185,7 @@
 
         // Meeting status
         function updateMeetingStatus(count) {
-            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge', 'status-massive');
+            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge', 'status-massive', 'status-stopped');
 
             let message = '';
             let statusClass = '';
@@ -1199,24 +1209,34 @@
 
             meetingStatus.textContent = message;
             meetingStatus.classList.add('show', statusClass);
+
+            // Stop animations when timer is not running
+            if (!timerInterval) {
+                meetingStatus.classList.add('status-stopped');
+            }
         }
 
         // Cost display styling (5 tiers to match money animation)
         function updateCostDisplayStyle(people, cost) {
-            costDisplayContainer.classList.remove('warning', 'danger', 'extreme', 'critical');
+            costDisplayContainer.classList.remove('warning', 'danger', 'extreme', 'critical', 'cost-stopped');
 
             if (people > 25 || cost > 2000) {
                 costDisplayContainer.classList.add('critical');
-                if (cost % 100 < 1 && cost > 100) playWarning();
+                if (timerInterval && cost % 100 < 1 && cost > 100) playWarning();
             } else if (people > 15 || cost > 1000) {
                 costDisplayContainer.classList.add('extreme');
-                if (cost % 100 < 1 && cost > 100) playWarning();
+                if (timerInterval && cost % 100 < 1 && cost > 100) playWarning();
             } else if (people > 10 || cost > 500) {
                 costDisplayContainer.classList.add('danger');
             } else if (people > 5 || cost > 200) {
                 costDisplayContainer.classList.add('warning');
             }
             // Default (no class) for ≤5 people and ≤$200
+
+            // Stop animations when timer is not running
+            if (!timerInterval) {
+                costDisplayContainer.classList.add('cost-stopped');
+            }
         }
 
         // Comparisons
