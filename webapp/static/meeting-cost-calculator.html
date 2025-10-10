@@ -594,9 +594,15 @@
         }
 
         .achievement-badge.locked {
-            background: var(--border-color);
-            color: var(--text-secondary);
-            opacity: 0.5;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #6b7280;
+            opacity: 0.6;
+        }
+
+        body.dark-mode .achievement-badge.locked {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: #94a3b8;
+            opacity: 0.6;
         }
 
         .achievement-badge.unlocked {
@@ -1101,15 +1107,22 @@
 
         // Achievements
         function updateAchievements() {
+            let hasNewAchievement = false;
+
             Object.keys(achievementDefs).forEach(key => {
                 const def = achievementDefs[key];
                 if (def.condition() && !achievements[key]) {
                     achievements[key] = true;
                     localStorage.setItem('achievements', JSON.stringify(achievements));
                     playChing();
+                    hasNewAchievement = true;
                 }
             });
-            renderAchievements();
+
+            // Only re-render if there's a new achievement
+            if (hasNewAchievement) {
+                renderAchievements();
+            }
         }
 
         function renderAchievements() {
