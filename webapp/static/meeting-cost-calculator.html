@@ -591,6 +591,7 @@
             align-items: center;
             gap: 5px;
             transition: all 0.3s;
+            cursor: help;
         }
 
         .achievement-badge.locked {
@@ -819,11 +820,11 @@
 
         // Achievement definitions
         const achievementDefs = {
-            efficient: { emoji: '⚡', name: 'Efficient', condition: () => seconds < 1800 && seconds > 0 },
-            budget: { emoji: '💰', name: 'Budget Hero', condition: () => getCurrentCost() < 100 && seconds > 600 },
-            small: { emoji: '👥', name: 'Small Team', condition: () => parseInt(peopleInput.value) <= 3 },
-            quick: { emoji: '🏃', name: 'Quick Meet', condition: () => seconds <= 900 && seconds > 0 },
-            mega: { emoji: '🏢', name: 'Mega Meeting', condition: () => parseInt(peopleInput.value) >= 20 }
+            efficient: { emoji: '⚡', name: 'Efficient', description: 'Keep meeting under 30 minutes', condition: () => seconds < 1800 && seconds > 0 },
+            budget: { emoji: '💰', name: 'Budget Hero', description: 'Keep cost under $100 for 10+ minute meeting', condition: () => getCurrentCost() < 100 && seconds > 600 },
+            small: { emoji: '👥', name: 'Small Team', description: 'Meeting with 3 or fewer people', condition: () => parseInt(peopleInput.value) <= 3 },
+            quick: { emoji: '🏃', name: 'Quick Meet', description: 'Complete meeting in 15 minutes or less', condition: () => seconds <= 900 && seconds > 0 },
+            mega: { emoji: '🏢', name: 'Mega Meeting', description: 'Meeting with 20 or more people', condition: () => parseInt(peopleInput.value) >= 20 }
         };
 
         // Sound effects using Web Audio API
@@ -1129,7 +1130,7 @@
             achievementList.innerHTML = Object.keys(achievementDefs).map(key => {
                 const def = achievementDefs[key];
                 const unlocked = achievements[key];
-                return `<div class="achievement-badge ${unlocked ? 'unlocked' : 'locked'}">
+                return `<div class="achievement-badge ${unlocked ? 'unlocked' : 'locked'}" title="${def.description}">
                     ${def.emoji} ${def.name}
                 </div>`;
             }).join('');
