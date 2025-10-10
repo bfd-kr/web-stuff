@@ -787,7 +787,7 @@
         let timerInterval = null;
         let seconds = 0;
         let soundEnabled = false;
-        let achievements = JSON.parse(localStorage.getItem('achievements') || '{}');
+        let achievements = {};
         let moneyAnimationInterval = null;
         let previousPeopleCount = 0;
 
@@ -1114,7 +1114,6 @@
                 const def = achievementDefs[key];
                 if (def.condition() && !achievements[key]) {
                     achievements[key] = true;
-                    localStorage.setItem('achievements', JSON.stringify(achievements));
                     playChing();
                     hasNewAchievement = true;
                 }
