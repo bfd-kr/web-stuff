@@ -1083,33 +1083,61 @@
         }
 
         // People visual - only update if count changed
+        // Icons represent quantities: 🧑 = 1, 👥 = 5, 🏢 = 20
         function updatePeopleVisual(count) {
             if (count === previousPeopleCount) return;
 
-            const maxDisplay = 20;
             peopleVisual.innerHTML = '';
-            const displayCount = Math.min(count, maxDisplay);
+            let remaining = count;
+            let delay = 0;
 
-            let emoji = '🧑';
-            if (count > 20) emoji = '👥';
-            if (count > 50) emoji = '🏢';
+            // Add buildings (20 people each)
+            const buildings = Math.floor(remaining / 20);
+            for (let i = 0; i < buildings; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '🏢';
+                icon.title = '20 people';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
+            }
+            remaining -= buildings * 20;
 
-            for (let i = 0; i < displayCount; i++) {
-                const person = document.createElement('span');
-                person.className = 'person-icon new';
-                person.textContent = emoji;
-                person.style.animationDelay = `${i * 0.05}s`;
-                peopleVisual.appendChild(person);
+            // Add groups (5 people each)
+            const groups = Math.floor(remaining / 5);
+            for (let i = 0; i < groups; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '👥';
+                icon.title = '5 people';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
+            }
+            remaining -= groups * 5;
+
+            // Add individuals (1 person each)
+            for (let i = 0; i < remaining; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '🧑';
+                icon.title = '1 person';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
             }
 
-            if (count > maxDisplay) {
-                const more = document.createElement('span');
-                more.className = 'person-icon new';
-                more.textContent = `+${count - maxDisplay}`;
-                more.style.fontSize = '16px';
-                more.style.fontWeight = 'bold';
-                more.style.color = '#666';
-                peopleVisual.appendChild(more);
+            // Add total count label if there are multiple icons
+            if (count > 1) {
+                const total = document.createElement('span');
+                total.className = 'person-icon new';
+                total.textContent = `= ${count}`;
+                total.style.fontSize = '14px';
+                total.style.fontWeight = 'bold';
+                total.style.color = 'var(--text-secondary)';
+                total.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(total);
             }
 
             previousPeopleCount = count;
