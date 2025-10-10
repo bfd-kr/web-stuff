@@ -911,27 +911,83 @@
             const money = document.createElement('div');
             money.className = 'money';
 
-            // Scale size based on cost per second
-            let size = 24;
-            let emoji = '💵';
+            // Progressive emoji selection based on cost per second with smooth transitions
+            let emoji, size;
+            const rand = Math.random();
 
-            if (costPerSecond > 10) {
-                size = 48;
-                emoji = '💰';
-            } else if (costPerSecond > 5) {
-                size = 36;
-                emoji = '💸';
-            } else if (costPerSecond > 1) {
-                size = 30;
-                emoji = Math.random() > 0.5 ? '💵' : '💴';
+            if (costPerSecond <= 0.5) {
+                // Very low burn: mostly coins
+                emoji = '🪙';
+                size = 20;
+            } else if (costPerSecond <= 2) {
+                // Low burn: transition from coins to bills
+                if (rand < costPerSecond / 2) {
+                    emoji = '💵';
+                    size = 24;
+                } else {
+                    emoji = '🪙';
+                    size = 20;
+                }
+            } else if (costPerSecond <= 5) {
+                // Medium burn: mostly bills with some flying money
+                const mixRatio = (costPerSecond - 2) / 3; // 0 to 1
+                if (rand < mixRatio) {
+                    emoji = '💸';
+                    size = 30;
+                } else {
+                    emoji = rand > 0.5 ? '💵' : '💴';
+                    size = 24;
+                }
+            } else if (costPerSecond <= 10) {
+                // High burn: flying money and money bags
+                const mixRatio = (costPerSecond - 5) / 5; // 0 to 1
+                if (rand < mixRatio) {
+                    emoji = '💰';
+                    size = 36;
+                } else {
+                    emoji = '💸';
+                    size = 30;
+                }
+            } else {
+                // Extreme burn: mostly money bags with some flying money
+                if (rand < 0.75) {
+                    emoji = '💰';
+                    size = 42;
+                } else {
+                    emoji = '💸';
+                    size = 34;
+                }
             }
 
             money.textContent = emoji;
             money.style.fontSize = size + 'px';
-            money.style.left = Math.random() * 100 + '%';
-            money.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+
+            // Prefer falling outside the container area (on edges)
+            // Container is centered with max-width 1400px
+            const viewportWidth = window.innerWidth;
+            const containerMaxWidth = Math.min(1400, viewportWidth - 40); // Account for padding
+            const edgeSpace = (viewportWidth - containerMaxWidth) / 2;
+            const edgePercentage = (edgeSpace / viewportWidth) * 100;
+
+            let leftPosition;
+            if (edgePercentage > 5 && Math.random() < 0.6) {
+                // 60% chance to fall on edges if there's space
+                if (Math.random() < 0.5) {
+                    // Left edge
+                    leftPosition = Math.random() * edgePercentage;
+                } else {
+                    // Right edge
+                    leftPosition = 100 - (Math.random() * edgePercentage);
+                }
+            } else {
+                // Fall anywhere
+                leftPosition = Math.random() * 100;
+            }
+
+            money.style.left = leftPosition + '%';
+            money.style.animationDuration = (Math.random() * 2 + 2) + 's';
             moneyContainer.appendChild(money);
-            setTimeout(() => money.remove(), 4000);
+            setTimeout(() => money.remove(), 5000);
         }
 
         function updateMoneyAnimation() {
@@ -955,8 +1011,14 @@
                 interval = 400; // 2.5 per second
             } else if (costPerSecond > 1) {
                 interval = 600; // 1.6 per second
+            } else if (costPerSecond > 0.1) {
+                interval = 800; // slower for very low burn
             }
 
+            // Create first money immediately
+            createMoney(costPerSecond);
+
+            // Then continue at intervals
             moneyAnimationInterval = setInterval(() => createMoney(costPerSecond), interval);
         }
 
