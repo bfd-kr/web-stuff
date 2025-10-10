@@ -95,18 +95,26 @@
             gap: 15px;
         }
 
+        .header-title {
+            flex: 1;
+            text-align: center;
+        }
+
         .header-controls h1 {
             margin: 0;
             font-size: 24px;
-            flex: 1;
-            text-align: center;
+        }
+
+        .header-controls .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 13px;
         }
 
         @media (max-width: 600px) {
             .header-controls {
                 flex-wrap: wrap;
             }
-            .header-controls h1 {
+            .header-title {
                 order: -1;
                 width: 100%;
                 margin-bottom: 10px;
@@ -162,9 +170,6 @@
 
         .subtitle {
             color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 14px;
         }
 
         .presets {
@@ -701,11 +706,12 @@
                 <button class="theme-btn active" data-theme="light">☀️</button>
                 <button class="theme-btn" data-theme="dark">🌙</button>
             </div>
-            <h1>Meeting Cost Calculator</h1>
+            <div class="header-title">
+                <h1>Meeting Cost Calculator</h1>
+                <p class="subtitle">Track how much your meetings really cost</p>
+            </div>
             <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
         </div>
-
-        <p class="subtitle">Track how much your meetings really cost</p>
 
         <div class="presets">
             <button class="preset-btn" data-preset="standup">
