@@ -403,6 +403,12 @@
             animation: shake 0.5s ease-in-out;
         }
 
+        .status-massive {
+            background: #fee2e2;
+            color: #7f1d1d;
+            animation: intensePulse 1s infinite;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -529,6 +535,11 @@
             animation: intensePulse 1s infinite;
         }
 
+        .cost-display.critical {
+            background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+            animation: criticalPulse 0.8s infinite;
+        }
+
         @keyframes glow {
             0%, 100% {
                 box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
@@ -546,6 +557,17 @@
             50% {
                 transform: scale(1.02);
                 box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        @keyframes criticalPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 80px rgba(255, 100, 100, 0.6);
             }
         }
 
@@ -1145,7 +1167,7 @@
 
         // Meeting status
         function updateMeetingStatus(count) {
-            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge');
+            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge', 'status-massive');
 
             let message = '';
             let statusClass = '';
@@ -1156,23 +1178,29 @@
             } else if (count <= 10) {
                 message = '⚠️ Getting larger... Is everyone necessary?';
                 statusClass = 'status-medium';
-            } else if (count <= 20) {
+            } else if (count <= 15) {
                 message = '🚨 Large meeting alert! Consider breaking into groups';
                 statusClass = 'status-large';
-            } else {
+            } else if (count <= 25) {
                 message = '💸 HUGE MEETING! This is costing serious money!';
                 statusClass = 'status-huge';
+            } else {
+                message = '🔥 MASSIVE MEETING! The burn rate is extreme!';
+                statusClass = 'status-massive';
             }
 
             meetingStatus.textContent = message;
             meetingStatus.classList.add('show', statusClass);
         }
 
-        // Cost display styling
+        // Cost display styling (5 tiers to match money animation)
         function updateCostDisplayStyle(people, cost) {
-            costDisplayContainer.classList.remove('warning', 'danger', 'extreme');
+            costDisplayContainer.classList.remove('warning', 'danger', 'extreme', 'critical');
 
-            if (people > 20 || cost > 1000) {
+            if (people > 25 || cost > 2000) {
+                costDisplayContainer.classList.add('critical');
+                if (cost % 100 < 1 && cost > 100) playWarning();
+            } else if (people > 15 || cost > 1000) {
                 costDisplayContainer.classList.add('extreme');
                 if (cost % 100 < 1 && cost > 100) playWarning();
             } else if (people > 10 || cost > 500) {
@@ -1180,6 +1208,7 @@
             } else if (people > 5 || cost > 200) {
                 costDisplayContainer.classList.add('warning');
             }
+            // Default (no class) for ≤5 people and ≤$200
         }
 
         // Comparisons
