@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Apps</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            background: #fafafa;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+        .apps-section {
+            margin-top: 3rem;
+        }
+        .apps-section h2 {
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+        .app-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+        .app-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        .app-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #667eea;
+            font-size: 1.3em;
+        }
+        .app-card p {
+            margin: 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Web Apps</h1>
+    <div class="container">
+        <p>This is a static web application served by nginx.</p>
+        <p>Browse the available applications below!</p>
+    </div>
+
+    <div class="apps-section">
+        <h2>Available Apps</h2>
+
+        <a href="name-race.html" class="app-card">
+            <h3>🏁 Project Name Race</h3>
+            <p>Watch three project names compete in an exciting animated race! Each runner has a unique racing strategy.</p>
+        </a>
+    </div>
+</body>
+</html>
