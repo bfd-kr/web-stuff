@@ -934,16 +934,19 @@
             money.className = 'money';
 
             // Progressive emoji selection based on cost per second with smooth transitions
+            // Aligned with meeting sizes: at $80/hr default, cost/sec = people × 0.022
+            // Tier 1: ≤5 people (≤$0.11/sec), Tier 2: 6-10 (≤$0.22/sec),
+            // Tier 3: 11-15 (≤$0.35/sec), Tier 4: 16-25 (≤$0.58/sec), Tier 5: 26+ (>$0.58/sec)
             let emoji, size;
             const rand = Math.random();
 
-            if (costPerSecond <= 0.25) {
-                // Very low burn: mostly coins
+            if (costPerSecond <= 0.12) {
+                // Tier 1: ≤5 people at $80/hr
                 emoji = '🪙';
                 size = 20;
-            } else if (costPerSecond <= 1) {
-                // Low burn: transition from coins to bills
-                const mixRatio = (costPerSecond - 0.25) / 0.75; // 0 to 1
+            } else if (costPerSecond <= 0.25) {
+                // Tier 2: 6-10 people - transition from coins to bills
+                const mixRatio = (costPerSecond - 0.12) / 0.13; // 0 to 1
                 if (rand < mixRatio) {
                     emoji = '💵';
                     size = 24;
@@ -951,9 +954,9 @@
                     emoji = '🪙';
                     size = 20;
                 }
-            } else if (costPerSecond <= 3) {
-                // Medium burn: mostly bills with some flying money
-                const mixRatio = (costPerSecond - 1) / 2; // 0 to 1
+            } else if (costPerSecond <= 0.40) {
+                // Tier 3: 11-15 people - bills with some flying money
+                const mixRatio = (costPerSecond - 0.25) / 0.15; // 0 to 1
                 if (rand < mixRatio) {
                     emoji = '💸';
                     size = 30;
@@ -961,9 +964,9 @@
                     emoji = rand > 0.5 ? '💵' : '💴';
                     size = 24;
                 }
-            } else if (costPerSecond <= 7) {
-                // High burn: flying money and money bags
-                const mixRatio = (costPerSecond - 3) / 4; // 0 to 1
+            } else if (costPerSecond <= 0.65) {
+                // Tier 4: 16-25 people - flying money to money bags
+                const mixRatio = (costPerSecond - 0.40) / 0.25; // 0 to 1
                 if (rand < mixRatio) {
                     emoji = '💰';
                     size = 36;
@@ -972,7 +975,7 @@
                     size = 30;
                 }
             } else {
-                // Extreme burn: mostly money bags with some flying money
+                // Tier 5: 26+ people - mostly money bags
                 if (rand < 0.75) {
                     emoji = '💰';
                     size = 42;
@@ -1023,18 +1026,23 @@
 
             if (!timerInterval) return;
 
-            // Frequency scales with cost per second
+            // Frequency scales with cost per second (aligned with 5 tiers)
             let interval = 1000; // default 1 per second
 
-            if (costPerSecond > 7) {
+            if (costPerSecond > 0.65) {
+                // Tier 5: 26+ people
                 interval = 100; // 10 per second
-            } else if (costPerSecond > 3) {
+            } else if (costPerSecond > 0.40) {
+                // Tier 4: 16-25 people
                 interval = 200; // 5 per second
-            } else if (costPerSecond > 1) {
+            } else if (costPerSecond > 0.25) {
+                // Tier 3: 11-15 people
                 interval = 400; // 2.5 per second
-            } else if (costPerSecond > 0.5) {
+            } else if (costPerSecond > 0.12) {
+                // Tier 2: 6-10 people
                 interval = 600; // 1.6 per second
-            } else if (costPerSecond > 0.1) {
+            } else if (costPerSecond > 0.05) {
+                // Tier 1: ≤5 people
                 interval = 800; // slower for very low burn
             }
 
