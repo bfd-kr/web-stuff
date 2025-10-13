@@ -526,9 +526,14 @@
             text-align: center;
         }
 
+        #comparisonList {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
         .comparison-item {
             padding: 8px;
-            margin: 5px 0;
             background: var(--container-bg);
             border-radius: 6px;
             font-size: 13px;
@@ -613,6 +618,43 @@
         .cost-amount {
             font-size: 48px;
             font-weight: bold;
+            position: relative;
+            display: inline-flex;
+            overflow: hidden;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .cost-digit {
+            display: inline-block;
+            position: relative;
+            height: 60px;
+            line-height: 60px;
+            overflow: hidden;
+        }
+
+        .cost-digit-inner {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+        }
+
+        @keyframes digitRoll {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .cost-digit.rolling .cost-digit-inner {
+            animation: digitRoll 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .achievements {
@@ -844,6 +886,7 @@
         let achievements = {};
         let moneyAnimationInterval = null;
         let previousPeopleCount = 0;
+        let selectedComparisons = [];
 
         // Elements
         const salaryInput = document.getElementById('salary');
@@ -1261,17 +1304,46 @@
             }
         }
 
+        // All possible comparisons
+        const allComparisons = [
+            { emoji: '☕', name: 'lattes', cost: 5 },
+            { emoji: '🍔', name: 'burgers', cost: 12 },
+            { emoji: '🍕', name: 'pizzas', cost: 15 },
+            { emoji: '🎬', name: 'movie tickets', cost: 15 },
+            { emoji: '🍜', name: 'ramen bowls', cost: 18 },
+            { emoji: '🌯', name: 'burritos', cost: 10 },
+            { emoji: '🍱', name: 'lunch boxes', cost: 12 },
+            { emoji: '🎮', name: 'video games', cost: 60 },
+            { emoji: '📚', name: 'books', cost: 20 },
+            { emoji: '🎧', name: 'headphones', cost: 80 },
+            { emoji: '👕', name: 't-shirts', cost: 25 },
+            { emoji: '🎯', name: 'dartboards', cost: 40 },
+            { emoji: '🏋️', name: 'gym memberships', cost: 50 },
+            { emoji: '🌱', name: 'houseplants', cost: 30 },
+            { emoji: '🎨', name: 'art supplies sets', cost: 45 },
+            { emoji: '🔧', name: 'tool sets', cost: 75 },
+            { emoji: '✈️', name: 'flight tickets', cost: 200 },
+            { emoji: '💻', name: 'keyboards', cost: 100 },
+            { emoji: '🖥️', name: 'monitors', cost: 300 },
+            { emoji: '🚴', name: 'bike rentals', cost: 35 }
+        ];
+
+        // Randomize comparisons when timer starts
+        function selectRandomComparisons() {
+            const shuffled = [...allComparisons].sort(() => Math.random() - 0.5);
+            selectedComparisons = shuffled.slice(0, 6);
+        }
+
         // Comparisons
         function updateComparisons(cost) {
-            const comparisons = [];
+            if (selectedComparisons.length === 0) return;
 
-            if (cost >= 5) comparisons.push(`☕ ${Math.floor(cost / 5)} lattes`);
-            if (cost >= 15) comparisons.push(`🍕 ${Math.floor(cost / 15)} pizzas`);
-            if (cost >= 50) comparisons.push(`📚 ${Math.floor(cost / 50)} books`);
-            if (cost >= 100) comparisons.push(`🎮 ${Math.floor(cost / 60)} video games`);
-            if (cost >= 500) comparisons.push(`✈️ ${Math.floor(cost / 200)} flight tickets`);
+            const comparisons = selectedComparisons
+                .filter(item => cost >= item.cost)
+                .map(item => `${item.emoji} ${Math.floor(cost / item.cost)} ${item.name}`);
 
-            comparisonList.innerHTML = comparisons.slice(0, 3)
+            // Display up to 6 items
+            comparisonList.innerHTML = comparisons.slice(0, 6)
                 .map(c => `<div class="comparison-item">${c}</div>`)
                 .join('');
         }
@@ -1326,6 +1398,43 @@
             }).join('');
         }
 
+        // Cash register digit rolling effect
+        function updateCostWithRoll(cost) {
+            const formattedCost = `$${cost.toFixed(2)}`;
+            const currentText = costDisplay.textContent;
+
+            if (currentText === formattedCost) return; // No change, no animation
+
+            // Clear existing content
+            costDisplay.innerHTML = '';
+
+            // Create digit spans for each character
+            for (let i = 0; i < formattedCost.length; i++) {
+                const char = formattedCost[i];
+                const oldChar = currentText[i] || '';
+
+                const digitSpan = document.createElement('span');
+                digitSpan.className = 'cost-digit';
+
+                const innerSpan = document.createElement('span');
+                innerSpan.className = 'cost-digit-inner';
+                innerSpan.textContent = char;
+
+                digitSpan.appendChild(innerSpan);
+                costDisplay.appendChild(digitSpan);
+
+                // Only animate if the character changed and it's a number
+                if (char !== oldChar && /\d/.test(char)) {
+                    // Add rolling animation
+                    digitSpan.classList.add('rolling');
+                    // Remove animation class after it completes
+                    setTimeout(() => {
+                        digitSpan.classList.remove('rolling');
+                    }, 500);
+                }
+            }
+        }
+
         // Main calculation
         function calculateCost() {
             const salary = parseFloat(salaryInput.value) || 0;
@@ -1333,8 +1442,8 @@
             const hours = seconds / 3600;
             const cost = salary * people * hours;
 
-            // Update main cost
-            costDisplay.textContent = `$${cost.toFixed(2)}`;
+            // Update main cost with rolling effect
+            updateCostWithRoll(cost);
 
             // Update metrics
             const costPerSecond = (salary * people) / 3600;
@@ -1367,6 +1476,9 @@
             startBtn.disabled = true;
             stopBtn.disabled = false;
             timeInput.disabled = true;
+
+            // Select random comparisons when meeting starts
+            selectRandomComparisons();
 
             timerInterval = setInterval(() => {
                 seconds++;
@@ -1455,6 +1567,7 @@
         // Initialize
         initTheme();
         renderAchievements();
+        selectRandomComparisons();
         calculateCost();
     </script>
 </body>
