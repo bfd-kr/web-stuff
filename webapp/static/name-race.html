@@ -210,6 +210,118 @@
             font-size: 0.9em;
             opacity: 0.7;
         }
+
+        .name-input-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .name-input-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .name-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .name-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .name-input-group label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .name-input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .name-input-0 {
+            border-color: rgba(255, 68, 68, 0.5);
+        }
+
+        .name-input-1 {
+            border-color: rgba(68, 255, 68, 0.5);
+        }
+
+        .name-input-2 {
+            border-color: rgba(68, 255, 255, 0.5);
+        }
+
+        .win-tally {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .tally-item {
+            text-align: center;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            min-width: 150px;
+        }
+
+        .tally-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .tally-count {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .tally-label {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .reset-tally-btn {
+            background: rgba(255, 68, 68, 0.3);
+            color: white;
+            border: 2px solid #ff4444;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+        }
+
+        .reset-tally-btn:hover {
+            background: rgba(255, 68, 68, 0.5);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -218,6 +330,41 @@
     </div>
 
     <div class="race-container">
+        <div class="name-input-section">
+            <h3>🏷️ Customize Racers</h3>
+            <div class="name-inputs">
+                <div class="name-input-group">
+                    <label for="name-0">Racer 1 (Red)</label>
+                    <input type="text" id="name-0" class="name-input name-input-0" value="SynthLoad" maxlength="20">
+                </div>
+                <div class="name-input-group">
+                    <label for="name-1">Racer 2 (Green)</label>
+                    <input type="text" id="name-1" class="name-input name-input-1" value="BenchPress" maxlength="20">
+                </div>
+                <div class="name-input-group">
+                    <label for="name-2">Racer 3 (Cyan)</label>
+                    <input type="text" id="name-2" class="name-input name-input-2" value="StressKit" maxlength="20">
+                </div>
+            </div>
+        </div>
+
+        <div class="win-tally">
+            <div class="tally-item">
+                <div class="tally-name" style="color: #ff4444" id="tally-name-0">SynthLoad</div>
+                <div class="tally-count" id="tally-count-0">0</div>
+                <div class="tally-label">wins</div>
+            </div>
+            <div class="tally-item">
+                <div class="tally-name" style="color: #44ff44" id="tally-name-1">BenchPress</div>
+                <div class="tally-count" id="tally-count-1">0</div>
+                <div class="tally-label">wins</div>
+            </div>
+            <div class="tally-item">
+                <div class="tally-name" style="color: #44ffff" id="tally-name-2">StressKit</div>
+                <div class="tally-count" id="tally-count-2">0</div>
+                <div class="tally-label">wins</div>
+            </div>
+        </div>
         <div class="racer racer-0">
             <div class="strategy-indicator" id="strategy-0"></div>
             <div class="racer-track">
@@ -248,6 +395,7 @@
 
     <div class="controls">
         <button class="start-btn" id="startBtn" onclick="startRace()">START RACE</button>
+        <button class="reset-tally-btn" onclick="resetTally()">Reset Win Tally</button>
     </div>
 
     <div class="winner-announcement" id="winnerAnnouncement">
@@ -256,7 +404,7 @@
     </div>
 
     <script>
-        const names = ['SynthLoad', 'BenchPress', 'StressKit'];
+        const DEFAULT_NAMES = ['SynthLoad', 'BenchPress', 'StressKit'];
         const colors = ['#ff4444', '#44ff44', '#44ffff'];
         const strategyNames = [
             '🚀 Fast Start/Fade',
@@ -265,11 +413,14 @@
             '🎲 Inconsistent'
         ];
 
+        let names = [...DEFAULT_NAMES];
         let positions = [0, 0, 0];
         let strategies = [];
         let raceInterval = null;
         let raceFinished = false;
         let winner = null;
+        let winTally = [0, 0, 0];
+        let previousNames = [...DEFAULT_NAMES];
 
         function getRandomStrategy() {
             return Math.floor(Math.random() * 4);
@@ -338,6 +489,44 @@
             }
         }
 
+        function updateTallyDisplay() {
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`tally-count-${i}`).textContent = winTally[i];
+                document.getElementById(`tally-name-${i}`).textContent = names[i];
+            }
+        }
+
+        function resetTally() {
+            winTally = [0, 0, 0];
+            updateTallyDisplay();
+        }
+
+        function checkNameChanges() {
+            let namesChanged = false;
+            for (let i = 0; i < 3; i++) {
+                if (names[i] !== previousNames[i]) {
+                    namesChanged = true;
+                    break;
+                }
+            }
+
+            if (namesChanged) {
+                winTally = [0, 0, 0];
+                previousNames = [...names];
+                updateTallyDisplay();
+            }
+        }
+
+        function updateNamesFromInputs() {
+            for (let i = 0; i < 3; i++) {
+                const input = document.getElementById(`name-${i}`);
+                const newName = input.value.trim() || DEFAULT_NAMES[i];
+                names[i] = newName;
+                input.value = newName; // Update input to show trimmed/default value
+            }
+            checkNameChanges();
+        }
+
         function endRace() {
             clearInterval(raceInterval);
 
@@ -351,6 +540,11 @@
             // Show winner
             const winnerName = results[0].name;
             const winnerColor = colors[results[0].index];
+            const winnerIndex = results[0].index;
+
+            // Update win tally
+            winTally[winnerIndex]++;
+            updateTallyDisplay();
 
             document.getElementById('winnerText').innerHTML =
                 `🎉 WINNER: <span style="color: ${winnerColor}">${winnerName}</span> 🎉`;
@@ -378,6 +572,15 @@
         }
 
         function startRace() {
+            // Update names from inputs and check for changes
+            updateNamesFromInputs();
+
+            // Update racer names on track
+            for (let i = 0; i < 3; i++) {
+                const racerNameEl = document.querySelector(`.racer-${i} .racer-name`);
+                racerNameEl.textContent = `🏃 ${names[i]}`;
+            }
+
             // Reset
             positions = [0, 0, 0];
             raceFinished = false;
@@ -402,11 +605,22 @@
             raceInterval = setInterval(updateRace, 50);
         }
 
-        // Show strategies on load
+        // Initialize on load
         window.addEventListener('load', () => {
+            // Set up name input listeners
             for (let i = 0; i < 3; i++) {
+                const input = document.getElementById(`name-${i}`);
+                input.addEventListener('blur', updateNamesFromInputs);
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        input.blur();
+                    }
+                });
                 document.getElementById(`strategy-${i}`).textContent = '';
             }
+
+            // Initialize tally display
+            updateTallyDisplay();
         });
     </script>
 </body>
