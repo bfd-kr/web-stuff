@@ -73,20 +73,19 @@
         }
 
         .racer-name {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 1em;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            z-index: 10;
-            pointer-events: none;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .racer-name .emoji {
             display: inline-block;
             transform: scaleX(-1);
+            font-size: 1.5em;
         }
 
         .racer-0 .racer-progress {
@@ -494,8 +493,11 @@
                 <div class="racer racer-${i}">
                     <div class="strategy-indicator" id="strategy-${i}"></div>
                     <div class="racer-track">
-                        <div class="racer-name" id="racer-name-${i}"><span class="emoji">🏃</span> ${name}</div>
-                        <div class="racer-progress" id="progress-${i}"></div>
+                        <div class="racer-progress" id="progress-${i}">
+                            <div class="racer-name" id="racer-name-${i}">
+                                ${name} <span class="emoji">🏃</span>
+                            </div>
+                        </div>
                         <div class="finish-line"></div>
                     </div>
                 </div>
@@ -680,7 +682,7 @@
             // Update racer names on track
             for (let i = 0; i < numRacers; i++) {
                 const racerNameEl = document.getElementById(`racer-name-${i}`);
-                racerNameEl.innerHTML = `<span class="emoji">🏃</span> ${names[i]}`;
+                racerNameEl.innerHTML = `${names[i]} <span class="emoji">🏃</span>`;
             }
 
             // Reset
