@@ -40,11 +40,23 @@
 
         .race-container {
             width: 90%;
-            max-width: 1200px;
+            max-width: 1400px;
             background: rgba(0, 0, 0, 0.3);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr 350px;
+            }
         }
 
         .racer {
@@ -80,6 +92,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: white !important;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
         .racer-name .emoji {
@@ -161,7 +177,6 @@
 
         .winner-announcement {
             text-align: center;
-            margin-top: 30px;
             padding: 20px;
             border-radius: 10px;
             background: rgba(255, 215, 0, 0.1);
@@ -169,11 +184,19 @@
             opacity: 0;
             transform: scale(0.8);
             transition: opacity 0.5s, transform 0.5s;
+            height: fit-content;
         }
 
         .winner-announcement.show {
             opacity: 1;
             transform: scale(1);
+        }
+
+        @media (min-width: 1024px) {
+            .winner-announcement {
+                position: sticky;
+                top: 20px;
+            }
         }
 
         .winner-announcement h2 {
@@ -184,9 +207,17 @@
 
         .podium {
             display: flex;
+            flex-direction: column;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-top: 20px;
+        }
+
+        @media (max-width: 1023px) {
+            .podium {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
         }
 
         .podium-place {
@@ -412,32 +443,38 @@
     </div>
 
     <div class="race-container">
-        <div class="name-input-section">
-            <h3>🏷️ Customize Racers</h3>
-            <div class="racer-controls">
-                <button class="add-racer-btn" onclick="addRacer()">+ Add Racer</button>
-                <button class="remove-racer-btn" onclick="removeRacer()">- Remove Racer</button>
+        <div class="main-layout">
+            <div class="main-content">
+                <div class="name-input-section">
+                    <h3>🏷️ Customize Racers</h3>
+                    <div class="racer-controls">
+                        <button class="add-racer-btn" onclick="addRacer()">+ Add Racer</button>
+                        <button class="remove-racer-btn" onclick="removeRacer()">- Remove Racer</button>
+                    </div>
+                    <div class="name-inputs" id="nameInputs"></div>
+                </div>
+
+                <div class="tally-section-title">🏆 Racer Win Tallies</div>
+                <div class="win-tally" id="winTally"></div>
+
+                <div class="tally-section-title">📊 Strategy Win Tallies</div>
+                <div class="strategy-tally" id="strategyTally"></div>
+
+                <div id="raceTrack"></div>
+
+                <div class="controls">
+                    <button class="start-btn" id="startBtn" onclick="startRace()">START RACE</button>
+                    <button class="reset-tally-btn" onclick="resetTally()">Reset Win Tally</button>
+                </div>
             </div>
-            <div class="name-inputs" id="nameInputs"></div>
+
+            <div class="sidebar">
+                <div class="winner-announcement" id="winnerAnnouncement">
+                    <h2 id="winnerText"></h2>
+                    <div class="podium" id="podium"></div>
+                </div>
+            </div>
         </div>
-
-        <div class="tally-section-title">🏆 Racer Win Tallies</div>
-        <div class="win-tally" id="winTally"></div>
-
-        <div class="tally-section-title">📊 Strategy Win Tallies</div>
-        <div class="strategy-tally" id="strategyTally"></div>
-
-        <div id="raceTrack"></div>
-    </div>
-
-    <div class="controls">
-        <button class="start-btn" id="startBtn" onclick="startRace()">START RACE</button>
-        <button class="reset-tally-btn" onclick="resetTally()">Reset Win Tally</button>
-    </div>
-
-    <div class="winner-announcement" id="winnerAnnouncement">
-        <h2 id="winnerText"></h2>
-        <div class="podium" id="podium"></div>
     </div>
 
     <script>
@@ -546,7 +583,7 @@
                     <div class="racer-track">
                         <div class="racer-progress" id="progress-${i}">
                             <div class="racer-name" id="racer-name-${i}">
-                                ${name} <span class="emoji">🏃</span>
+                                ${name} <span class="emoji">🐕</span>
                             </div>
                         </div>
                         <div class="finish-line"></div>
@@ -751,7 +788,7 @@
             // Update racer names on track
             for (let i = 0; i < numRacers; i++) {
                 const racerNameEl = document.getElementById(`racer-name-${i}`);
-                racerNameEl.innerHTML = `${names[i]} <span class="emoji">🏃</span>`;
+                racerNameEl.innerHTML = `${names[i]} <span class="emoji">🐕</span>`;
             }
 
             // Reset
