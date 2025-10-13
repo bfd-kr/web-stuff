@@ -435,6 +435,35 @@
             margin: 25px 0 10px 0;
             font-weight: bold;
         }
+
+        .emoji-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .emoji-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: all 0.3s;
+        }
+
+        .emoji-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .emoji-option.selected {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -452,6 +481,13 @@
                         <button class="remove-racer-btn" onclick="removeRacer()">- Remove Racer</button>
                     </div>
                     <div class="name-inputs" id="nameInputs"></div>
+
+                    <div class="tally-section-title" style="margin-top: 20px;">🐾 Select Racer Type</div>
+                    <div class="emoji-selector">
+                        <div class="emoji-option" data-emoji="🐕" onclick="selectEmoji('🐕')" title="Dog">🐕</div>
+                        <div class="emoji-option" data-emoji="🐎" onclick="selectEmoji('🐎')" title="Horse">🐎</div>
+                        <div class="emoji-option" data-emoji="🐫" onclick="selectEmoji('🐫')" title="Camel">🐫</div>
+                    </div>
                 </div>
 
                 <div class="tally-section-title">🏆 Racer Win Tallies</div>
@@ -504,6 +540,7 @@
         let winTally = [];
         let strategyTally = [0, 0, 0, 0]; // Track wins for each strategy
         let previousNames = [];
+        let selectedRacerEmoji = '🐕'; // Default to dog
 
         function initializeRacers(count) {
             numRacers = Math.max(2, Math.min(count, 10)); // Min 2, max 10
@@ -583,7 +620,7 @@
                     <div class="racer-track">
                         <div class="racer-progress" id="progress-${i}">
                             <div class="racer-name" id="racer-name-${i}">
-                                ${name} <span class="emoji">🐕</span>
+                                ${name} <span class="emoji">${selectedRacerEmoji}</span>
                             </div>
                         </div>
                         <div class="finish-line"></div>
@@ -788,7 +825,7 @@
             // Update racer names on track
             for (let i = 0; i < numRacers; i++) {
                 const racerNameEl = document.getElementById(`racer-name-${i}`);
-                racerNameEl.innerHTML = `${names[i]} <span class="emoji">🐕</span>`;
+                racerNameEl.innerHTML = `${names[i]} <span class="emoji">${selectedRacerEmoji}</span>`;
             }
 
             // Reset
@@ -814,9 +851,30 @@
             raceInterval = setInterval(updateRace, 50);
         }
 
+        function selectEmoji(emoji) {
+            selectedRacerEmoji = emoji;
+
+            // Update UI to show selected emoji
+            document.querySelectorAll('.emoji-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`.emoji-option[data-emoji="${emoji}"]`).classList.add('selected');
+
+            // Update all racer emojis on track
+            for (let i = 0; i < numRacers; i++) {
+                const racerNameEl = document.getElementById(`racer-name-${i}`);
+                if (racerNameEl) {
+                    const nameText = names[i];
+                    racerNameEl.innerHTML = `${nameText} <span class="emoji">${selectedRacerEmoji}</span>`;
+                }
+            }
+        }
+
         // Initialize on load
         window.addEventListener('load', () => {
             initializeRacers(3);
+            // Set default emoji selection
+            document.querySelector('.emoji-option[data-emoji="🐕"]').classList.add('selected');
         });
     </script>
 </body>
