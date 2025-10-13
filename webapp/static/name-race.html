@@ -360,6 +360,50 @@
             background: rgba(255, 68, 68, 0.5);
             transform: translateY(-2px);
         }
+
+        .strategy-tally {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .strategy-tally-item {
+            text-align: center;
+            padding: 12px 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            min-width: 140px;
+        }
+
+        .strategy-tally-name {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #ffd700;
+        }
+
+        .strategy-tally-count {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .strategy-tally-label {
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .tally-section-title {
+            text-align: center;
+            color: #ffd700;
+            font-size: 1.1em;
+            margin: 25px 0 10px 0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -377,7 +421,12 @@
             <div class="name-inputs" id="nameInputs"></div>
         </div>
 
+        <div class="tally-section-title">🏆 Racer Win Tallies</div>
         <div class="win-tally" id="winTally"></div>
+
+        <div class="tally-section-title">📊 Strategy Win Tallies</div>
+        <div class="strategy-tally" id="strategyTally"></div>
+
         <div id="raceTrack"></div>
     </div>
 
@@ -416,6 +465,7 @@
         let raceFinished = false;
         let winner = null;
         let winTally = [];
+        let strategyTally = [0, 0, 0, 0]; // Track wins for each strategy
         let previousNames = [];
 
         function initializeRacers(count) {
@@ -432,6 +482,7 @@
 
             previousNames = [...names];
             renderRacers();
+            updateStrategyTallyDisplay();
         }
 
         function addRacer() {
@@ -600,9 +651,22 @@
             }
         }
 
+        function updateStrategyTallyDisplay() {
+            const strategyHTML = strategyNames.map((name, i) => `
+                <div class="strategy-tally-item">
+                    <div class="strategy-tally-name">${name}</div>
+                    <div class="strategy-tally-count" id="strategy-tally-${i}">${strategyTally[i]}</div>
+                    <div class="strategy-tally-label">wins</div>
+                </div>
+            `).join('');
+            document.getElementById('strategyTally').innerHTML = strategyHTML;
+        }
+
         function resetTally() {
             winTally = Array(numRacers).fill(0);
+            strategyTally = [0, 0, 0, 0];
             updateTallyDisplay();
+            updateStrategyTallyDisplay();
         }
 
         function checkNameChanges() {
@@ -649,6 +713,11 @@
             // Update win tally
             winTally[winnerIndex]++;
             updateTallyDisplay();
+
+            // Update strategy tally
+            const winnerStrategy = strategies[winnerIndex];
+            strategyTally[winnerStrategy]++;
+            updateStrategyTallyDisplay();
 
             document.getElementById('winnerText').innerHTML =
                 `🎉 WINNER: <span style="color: ${winnerColor}">${winnerName}</span> 🎉`;
