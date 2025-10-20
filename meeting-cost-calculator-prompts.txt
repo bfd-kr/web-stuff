@@ -1,0 +1,97 @@
+Meeting Cost Calculator - Development Prompts
+==============================================
+
+This document lists all the prompts used to create and refine the meeting cost calculator.
+
+## Initial Creation
+
+1. Create the basic calculator
+   "lets create a new html page. The page will be a meeting cost calculator. it should have an input for a blended salary that defaults to $80 an hour. it should have an input for number of people on the call. it should have an input for time on call, HH:MM:SS. time on call should have a start and stop button that allows time to increment after or instead of the user providing initial input. From there the meeting cost should be calculated as the number of people times the blended salary times the elapsed time. account for the blended salary being per hour when multiplying in the elapsed time."
+
+2. Documentation & linking
+   "update documentation and link to the new page from the index"
+
+## Bug Fixes & Styling
+
+3. Fix currency symbol styling
+   "the $ on the blended rate has a styling issue and is floating in a weird location"
+
+## Visual Enhancements
+
+4. Add reactivity to people count
+   "lets liven the page up. step one have the page react at more people are added to the meeting"
+
+5. Request for enhancement recommendations
+   "please recommend additional enhancements"
+
+6. Implement selected enhancements
+   "lets do... 1, 2, 3,4,9,13,15,16,17"
+
+7. Improve animations and layout
+   "change the falling money to be larger bills and more frequent as the cost per second increases. the number of people icons flashing on each tick needs to stop. the viewport isn't allowing scrolling. you can't see all information at once. make better use of horizontal space"
+
+8. Layout optimization
+   "lets try putting blended rate, number of people and the timer on the same line"
+
+## Achievements System
+
+9. Understanding achievements
+   "what drives the achievements? they spin every second, but they never seem to 'activate'."
+
+10. Add tooltips
+    "add tool tips to the achievements showing the target"
+
+11. Clarify achievement states
+    "the default achievements appear as though they're hit. what is the dim state? when do they trigger? when the meeting stops, right away?"
+
+12. Fix achievement behavior
+    "I think they should be locked/dimmed when the meeting starts then unlocked as soon as they're hit"
+
+13. Debug achievements
+    "I don't believe the achievements are working as expected. They don't start dim or change when hit. Are you able to write a test to assert behaviors for the html page"
+
+14. Remove localStorage
+    - "what are we using local storage for"
+    - "remove localStorage for achievements"
+
+15. Fix achievement timing
+    "quick meet and efficient should not be reached until the meeting stops"
+
+## Animation Refinements
+
+16. Improve money animation
+    "the background animation should favor falling where the ui isn't. money doesn't fall right away. we should see coins slowly transitioning to money, money bags, all things, faster as the burn rate increases"
+
+17. Calibrate animations
+    "I'm not sure the meeting size reactions are properly calibrated with the falling money. lets increase the numbers for meeting size a little and decrease the money ranges"
+
+18. Update attendee icons
+    "lets update the icons representing attendees. we should assign the icons in the display to represent subsets of the meeting count. for example 🧑 represents 1 person, 👥 represents 5 people, 🏢 represents 20 people"
+
+19. Align animation systems
+    - "how many money combinations do we have? is it the same as the number of meeting size reactions? let's align those to (don't remove money combos)."
+    - "do the cost per second thresholds align with the meeting size?"
+
+20. Stop animations on pause
+    "when the stop button has been pushed, stop animating the meeting size and cost"
+
+## Header & Layout Polish
+
+21. Fix header positioning
+    - "the header has not moved"
+    - "Track how much your meetings really cost should be moved up as well. its not properly centered anymore"
+
+## Cost Comparison Feature
+
+22. Enhance cost comparisons
+    "let's make the 'this meeting could buy' two columns, for up to six comparisons. Also the current algorithm has a defect, it always picks the first three. make the could buy count 20 and the selection random each time a meeting starts"
+
+---
+
+Summary
+-------
+These prompts show the iterative development process from initial creation through multiple rounds of refinement, bug fixes, and feature enhancements. The development progressed through:
+- Basic functionality (inputs, timer, calculations)
+- Visual enhancements (animations, responsive layout)
+- Interactive features (achievements, presets)
+- Polish and refinements (alignment, calibration, bug fixes)

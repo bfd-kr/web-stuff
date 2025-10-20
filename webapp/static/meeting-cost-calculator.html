@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Cost Calculator</title>
+    <style>
+        :root {
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --container-bg: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-tertiary: #555;
+            --border-color: #e0e0e0;
+            --input-bg: #ffffff;
+            --visual-bg: #f9fafb;
+        }
+
+        body.dark-mode {
+            --bg-gradient-1: #1e293b;
+            --bg-gradient-2: #0f172a;
+            --container-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --visual-bg: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .money-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .money {
+            position: absolute;
+            animation: fall linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header-controls h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header-controls .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .header-controls {
+                flex-wrap: wrap;
+            }
+            .header-title {
+                order: -1;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        .theme-toggle {
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .theme-btn.active {
+            background: #667eea;
+        }
+
+        .sound-toggle {
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .sound-toggle.active {
+            background: #10b981;
+            color: white;
+        }
+
+        h1 {
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+        }
+
+        .presets {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            background: var(--visual-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .preset-btn .preset-detail {
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0.7;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .inputs-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 700px) {
+            .inputs-row {
+                grid-template-columns: 1fr 1fr 2fr;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group.compact {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #dc2626;
+        }
+
+        .btn-reset {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #4b5563;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-prefix {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-prefix input {
+            padding-left: 28px;
+        }
+
+        .input-prefix::before {
+            content: '$';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .people-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            min-height: 40px;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .person-icon {
+            font-size: 24px;
+            transition: transform 0.2s;
+        }
+
+        .person-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .person-icon.new {
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .meeting-status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .meeting-status.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-small {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-large {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-huge {
+            background: #fce7f3;
+            color: #831843;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .status-massive {
+            background: #fee2e2;
+            color: #7f1d1d;
+            animation: intensePulse 1s infinite;
+        }
+
+        /* Disable animations when timer is stopped */
+        .meeting-status.status-stopped {
+            animation: none !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .progress-ring {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        .ring-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-circle-bg {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 8;
+        }
+
+        .ring-circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        .ring-label {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .ring-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        .cost-metrics {
+            background: var(--visual-bg);
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .comparisons {
+            background: var(--visual-bg);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .comparison-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #comparisonList {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .comparison-item {
+            padding: 8px;
+            background: var(--container-bg);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .cost-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .cost-display.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            animation: glow 2s infinite;
+        }
+
+        .cost-display.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: glow 1.5s infinite;
+        }
+
+        .cost-display.extreme {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            animation: intensePulse 1s infinite;
+        }
+
+        .cost-display.critical {
+            background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+            animation: criticalPulse 0.8s infinite;
+        }
+
+        /* Disable cost display animations when timer is stopped */
+        .cost-display.cost-stopped {
+            animation: none !important;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes intensePulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 60px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        @keyframes criticalPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 80px rgba(255, 100, 100, 0.6);
+            }
+        }
+
+        .cost-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cost-amount {
+            font-size: 48px;
+            font-weight: bold;
+            position: relative;
+            display: inline-flex;
+            overflow: hidden;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .cost-digit {
+            display: inline-block;
+            position: relative;
+            height: 60px;
+            line-height: 60px;
+            overflow: hidden;
+        }
+
+        .cost-digit-inner {
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+        }
+
+        @keyframes digitRoll {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .cost-digit.rolling .cost-digit-inner {
+            animation: digitRoll 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .achievements {
+            padding: 15px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+        }
+
+        .achievement-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .achievement-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .achievement-badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            cursor: help;
+        }
+
+        .achievement-badge.locked {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #6b7280;
+            opacity: 0.6;
+        }
+
+        body.dark-mode .achievement-badge.locked {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: #94a3b8;
+            opacity: 0.6;
+        }
+
+        .achievement-badge.unlocked {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: badgePop 0.5s ease-out;
+        }
+
+        @keyframes badgePop {
+            0% {
+                transform: scale(0) rotate(-180deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .keyboard-shortcuts {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .keyboard-shortcuts kbd {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="money-container" id="moneyContainer"></div>
+
+    <div class="container">
+        <div class="header-controls">
+            <div class="theme-toggle" id="themeToggle">
+                <button class="theme-btn active" data-theme="light">☀️</button>
+                <button class="theme-btn" data-theme="dark">🌙</button>
+            </div>
+            <div class="header-title">
+                <h1>Meeting Cost Calculator</h1>
+                <p class="subtitle">Track how much your meetings really cost</p>
+            </div>
+            <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
+        </div>
+
+        <div class="presets">
+            <button class="preset-btn" data-preset="standup">
+                Daily Standup
+                <span class="preset-detail">10 people × 15min</span>
+            </button>
+            <button class="preset-btn" data-preset="planning">
+                Sprint Planning
+                <span class="preset-detail">8 people × 2hr</span>
+            </button>
+            <button class="preset-btn" data-preset="allhands">
+                All Hands
+                <span class="preset-detail">50 people × 1hr</span>
+            </button>
+            <button class="preset-btn" data-preset="oneone">
+                1:1 Meeting
+                <span class="preset-detail">2 people × 30min</span>
+            </button>
+        </div>
+
+        <div class="main-grid">
+            <div class="input-section">
+                <div class="inputs-row">
+                    <div class="input-group compact">
+                        <label for="salary">Blended Hourly Rate</label>
+                        <div class="input-prefix">
+                            <input type="number" id="salary" value="80" min="0" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="input-group compact">
+                        <label for="people">Number of People</label>
+                        <input type="number" id="people" value="1" min="1" step="1">
+                    </div>
+
+                    <div class="input-group compact">
+                        <label for="time">Time (HH:MM:SS)</label>
+                        <input type="text" id="time" value="00:00:00" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" placeholder="00:00:00">
+                        <div class="timer-controls">
+                            <button id="startBtn" class="btn-start">Start</button>
+                            <button id="stopBtn" class="btn-stop" disabled>Stop</button>
+                            <button id="resetBtn" class="btn-reset">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="people-visual" id="peopleVisual"></div>
+                <div class="meeting-status" id="meetingStatus"></div>
+
+                <div class="cost-display">
+                    <div class="cost-label">Total Meeting Cost</div>
+                    <div class="cost-amount" id="cost">$0.00</div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="progress-ring">
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="timeRing" cx="40" cy="40" r="32"
+                                    stroke="#667eea" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>Time</div>
+                            <div class="ring-value" id="timeRingValue">0m</div>
+                        </div>
+                    </div>
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="peopleRing" cx="40" cy="40" r="32"
+                                    stroke="#10b981" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>People</div>
+                            <div class="ring-value" id="peopleRingValue">0</div>
+                        </div>
+                    </div>
+                    <div class="ring-container">
+                        <svg class="ring-svg" width="80" height="80">
+                            <circle class="ring-circle-bg" cx="40" cy="40" r="32"></circle>
+                            <circle class="ring-circle" id="costRing" cx="40" cy="40" r="32"
+                                    stroke="#f59e0b" stroke-dasharray="201.06" stroke-dashoffset="201.06"></circle>
+                        </svg>
+                        <div class="ring-label">
+                            <div>Cost</div>
+                            <div class="ring-value" id="costRingValue">$0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cost-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Per Second</div>
+                        <div class="metric-value" id="perSecond">$0.00</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Per Minute</div>
+                        <div class="metric-value" id="perMinute">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="comparisons" id="comparisons">
+                    <div class="comparison-title">💭 This meeting could buy...</div>
+                    <div id="comparisonList"></div>
+                </div>
+
+                <div class="achievements">
+                    <div class="achievement-title">🏆 Achievements</div>
+                    <div class="achievement-list" id="achievementList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="keyboard-shortcuts">
+            <strong>Shortcuts:</strong>
+            <kbd>Space</kbd> Start/Stop |
+            <kbd>R</kbd> Reset |
+            <kbd>+</kbd>/<kbd>-</kbd> People |
+            <kbd>D</kbd> Dark Mode
+        </div>
+    </div>
+
+    <script>
+        // State
+        let timerInterval = null;
+        let seconds = 0;
+        let soundEnabled = false;
+        let achievements = {};
+        let moneyAnimationInterval = null;
+        let previousPeopleCount = 0;
+        let selectedComparisons = [];
+
+        // Elements
+        const salaryInput = document.getElementById('salary');
+        const peopleInput = document.getElementById('people');
+        const timeInput = document.getElementById('time');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const costDisplay = document.getElementById('cost');
+        const peopleVisual = document.getElementById('peopleVisual');
+        const meetingStatus = document.getElementById('meetingStatus');
+        const costDisplayContainer = document.querySelector('.cost-display');
+        const perSecond = document.getElementById('perSecond');
+        const perMinute = document.getElementById('perMinute');
+        const comparisonList = document.getElementById('comparisonList');
+        const achievementList = document.getElementById('achievementList');
+        const soundToggle = document.getElementById('soundToggle');
+        const themeToggle = document.getElementById('themeToggle');
+        const moneyContainer = document.getElementById('moneyContainer');
+
+        // Progress rings
+        const timeRing = document.getElementById('timeRing');
+        const peopleRing = document.getElementById('peopleRing');
+        const costRing = document.getElementById('costRing');
+        const timeRingValue = document.getElementById('timeRingValue');
+        const peopleRingValue = document.getElementById('peopleRingValue');
+        const costRingValue = document.getElementById('costRingValue');
+
+        // Achievement definitions
+        const achievementDefs = {
+            efficient: { emoji: '⚡', name: 'Efficient', description: 'Keep meeting under 30 minutes', onComplete: true, condition: () => seconds < 1800 && seconds > 0 },
+            budget: { emoji: '💰', name: 'Budget Hero', description: 'Keep cost under $100 for 10+ minute meeting', condition: () => getCurrentCost() < 100 && seconds > 600 },
+            small: { emoji: '👥', name: 'Small Team', description: 'Meeting with 5 or fewer people', condition: () => parseInt(peopleInput.value) <= 5 && seconds > 0 },
+            quick: { emoji: '🏃', name: 'Quick Meet', description: 'Complete meeting in 15 minutes or less', onComplete: true, condition: () => seconds <= 900 && seconds > 0 },
+            mega: { emoji: '🏢', name: 'Mega Meeting', description: 'Meeting with 25 or more people', condition: () => parseInt(peopleInput.value) >= 25 && seconds > 0 }
+        };
+
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTick() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 800;
+            gain.gain.value = 0.02;
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.02);
+        }
+
+        function playChing() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 1200;
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playWarning() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 400;
+            gain.gain.value = 0.05;
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.1);
+            setTimeout(() => {
+                const osc2 = audioContext.createOscillator();
+                osc2.connect(gain);
+                osc2.frequency.value = 400;
+                osc2.start();
+                osc2.stop(audioContext.currentTime + 0.1);
+            }, 100);
+        }
+
+        // Dark mode
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            localStorage.setItem('theme', theme);
+        }
+
+        themeToggle.addEventListener('click', (e) => {
+            if (e.target.classList.contains('theme-btn')) {
+                applyTheme(e.target.dataset.theme);
+            }
+        });
+
+        // Sound toggle
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            soundToggle.classList.toggle('active', soundEnabled);
+            if (soundEnabled) playChing();
+        });
+
+        // Money animation - scales with cost per second
+        function createMoney(costPerSecond) {
+            const money = document.createElement('div');
+            money.className = 'money';
+
+            // Progressive emoji selection based on cost per second with smooth transitions
+            // Aligned with meeting sizes: at $80/hr default, cost/sec = people × 0.022
+            // Tier 1: ≤5 people (≤$0.11/sec), Tier 2: 6-10 (≤$0.22/sec),
+            // Tier 3: 11-15 (≤$0.35/sec), Tier 4: 16-25 (≤$0.58/sec), Tier 5: 26+ (>$0.58/sec)
+            let emoji, size;
+            const rand = Math.random();
+
+            if (costPerSecond <= 0.12) {
+                // Tier 1: ≤5 people at $80/hr
+                emoji = '🪙';
+                size = 20;
+            } else if (costPerSecond <= 0.25) {
+                // Tier 2: 6-10 people - transition from coins to bills
+                const mixRatio = (costPerSecond - 0.12) / 0.13; // 0 to 1
+                if (rand < mixRatio) {
+                    emoji = '💵';
+                    size = 24;
+                } else {
+                    emoji = '🪙';
+                    size = 20;
+                }
+            } else if (costPerSecond <= 0.40) {
+                // Tier 3: 11-15 people - bills with some flying money
+                const mixRatio = (costPerSecond - 0.25) / 0.15; // 0 to 1
+                if (rand < mixRatio) {
+                    emoji = '💸';
+                    size = 30;
+                } else {
+                    emoji = rand > 0.5 ? '💵' : '💴';
+                    size = 24;
+                }
+            } else if (costPerSecond <= 0.65) {
+                // Tier 4: 16-25 people - flying money to money bags
+                const mixRatio = (costPerSecond - 0.40) / 0.25; // 0 to 1
+                if (rand < mixRatio) {
+                    emoji = '💰';
+                    size = 36;
+                } else {
+                    emoji = '💸';
+                    size = 30;
+                }
+            } else {
+                // Tier 5: 26+ people - mostly money bags
+                if (rand < 0.75) {
+                    emoji = '💰';
+                    size = 42;
+                } else {
+                    emoji = '💸';
+                    size = 34;
+                }
+            }
+
+            money.textContent = emoji;
+            money.style.fontSize = size + 'px';
+
+            // Prefer falling outside the container area (on edges)
+            // Container is centered with max-width 1400px
+            const viewportWidth = window.innerWidth;
+            const containerMaxWidth = Math.min(1400, viewportWidth - 40); // Account for padding
+            const edgeSpace = (viewportWidth - containerMaxWidth) / 2;
+            const edgePercentage = (edgeSpace / viewportWidth) * 100;
+
+            let leftPosition;
+            if (edgePercentage > 5 && Math.random() < 0.6) {
+                // 60% chance to fall on edges if there's space
+                if (Math.random() < 0.5) {
+                    // Left edge
+                    leftPosition = Math.random() * edgePercentage;
+                } else {
+                    // Right edge
+                    leftPosition = 100 - (Math.random() * edgePercentage);
+                }
+            } else {
+                // Fall anywhere
+                leftPosition = Math.random() * 100;
+            }
+
+            money.style.left = leftPosition + '%';
+            money.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            moneyContainer.appendChild(money);
+            setTimeout(() => money.remove(), 5000);
+        }
+
+        function updateMoneyAnimation() {
+            const costPerSecond = getCurrentCost() / (seconds || 1);
+
+            if (moneyAnimationInterval) {
+                clearInterval(moneyAnimationInterval);
+                moneyAnimationInterval = null;
+            }
+
+            if (!timerInterval) return;
+
+            // Frequency scales with cost per second (aligned with 5 tiers)
+            let interval = 1000; // default 1 per second
+
+            if (costPerSecond > 0.65) {
+                // Tier 5: 26+ people
+                interval = 100; // 10 per second
+            } else if (costPerSecond > 0.40) {
+                // Tier 4: 16-25 people
+                interval = 200; // 5 per second
+            } else if (costPerSecond > 0.25) {
+                // Tier 3: 11-15 people
+                interval = 400; // 2.5 per second
+            } else if (costPerSecond > 0.12) {
+                // Tier 2: 6-10 people
+                interval = 600; // 1.6 per second
+            } else if (costPerSecond > 0.05) {
+                // Tier 1: ≤5 people
+                interval = 800; // slower for very low burn
+            }
+
+            // Create first money immediately
+            createMoney(costPerSecond);
+
+            // Then continue at intervals
+            moneyAnimationInterval = setInterval(() => createMoney(costPerSecond), interval);
+        }
+
+        function stopMoneyAnimation() {
+            if (moneyAnimationInterval) {
+                clearInterval(moneyAnimationInterval);
+                moneyAnimationInterval = null;
+            }
+        }
+
+        // Meeting presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                const presets = {
+                    standup: { people: 10, time: 900 },
+                    planning: { people: 8, time: 7200 },
+                    allhands: { people: 50, time: 3600 },
+                    oneone: { people: 2, time: 1800 }
+                };
+
+                const p = presets[preset];
+                peopleInput.value = p.people;
+                seconds = p.time;
+                timeInput.value = formatTime(seconds);
+                calculateCost();
+                playChing();
+            });
+        });
+
+        // Utilities
+        function parseTime(timeStr) {
+            const parts = timeStr.split(':');
+            if (parts.length !== 3) return 0;
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+            const secs = parseInt(parts[2]) || 0;
+            return hours * 3600 + minutes * 60 + secs;
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function getCurrentCost() {
+            const salary = parseFloat(salaryInput.value) || 0;
+            const people = parseInt(peopleInput.value) || 0;
+            const hours = seconds / 3600;
+            return salary * people * hours;
+        }
+
+        // Progress rings
+        function updateRing(ring, percentage, valueEl, displayValue) {
+            const circumference = 2 * Math.PI * 32;
+            const offset = circumference - (percentage / 100) * circumference;
+            ring.style.strokeDashoffset = offset;
+            valueEl.textContent = displayValue;
+        }
+
+        // People visual - only update if count changed
+        // Icons represent quantities: 🧑 = 1, 👥 = 5, 🏢 = 20
+        function updatePeopleVisual(count) {
+            if (count === previousPeopleCount) return;
+
+            peopleVisual.innerHTML = '';
+            let remaining = count;
+            let delay = 0;
+
+            // Add buildings (20 people each)
+            const buildings = Math.floor(remaining / 20);
+            for (let i = 0; i < buildings; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '🏢';
+                icon.title = '20 people';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
+            }
+            remaining -= buildings * 20;
+
+            // Add groups (5 people each)
+            const groups = Math.floor(remaining / 5);
+            for (let i = 0; i < groups; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '👥';
+                icon.title = '5 people';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
+            }
+            remaining -= groups * 5;
+
+            // Add individuals (1 person each)
+            for (let i = 0; i < remaining; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'person-icon new';
+                icon.textContent = '🧑';
+                icon.title = '1 person';
+                icon.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(icon);
+                delay++;
+            }
+
+            // Add total count label if there are multiple icons
+            if (count > 1) {
+                const total = document.createElement('span');
+                total.className = 'person-icon new';
+                total.textContent = `= ${count}`;
+                total.style.fontSize = '14px';
+                total.style.fontWeight = 'bold';
+                total.style.color = 'var(--text-secondary)';
+                total.style.animationDelay = `${delay * 0.05}s`;
+                peopleVisual.appendChild(total);
+            }
+
+            previousPeopleCount = count;
+        }
+
+        // Meeting status
+        function updateMeetingStatus(count) {
+            meetingStatus.classList.remove('show', 'status-small', 'status-medium', 'status-large', 'status-huge', 'status-massive', 'status-stopped');
+
+            let message = '';
+            let statusClass = '';
+
+            if (count <= 5) {
+                message = '✅ Great! Small meetings are efficient';
+                statusClass = 'status-small';
+            } else if (count <= 10) {
+                message = '⚠️ Getting larger... Is everyone necessary?';
+                statusClass = 'status-medium';
+            } else if (count <= 15) {
+                message = '🚨 Large meeting alert! Consider breaking into groups';
+                statusClass = 'status-large';
+            } else if (count <= 25) {
+                message = '💸 HUGE MEETING! This is costing serious money!';
+                statusClass = 'status-huge';
+            } else {
+                message = '🔥 MASSIVE MEETING! The burn rate is extreme!';
+                statusClass = 'status-massive';
+            }
+
+            meetingStatus.textContent = message;
+            meetingStatus.classList.add('show', statusClass);
+
+            // Stop animations when timer is not running
+            if (!timerInterval) {
+                meetingStatus.classList.add('status-stopped');
+            }
+        }
+
+        // Cost display styling (5 tiers to match money animation)
+        function updateCostDisplayStyle(people, cost) {
+            costDisplayContainer.classList.remove('warning', 'danger', 'extreme', 'critical', 'cost-stopped');
+
+            if (people > 25 || cost > 2000) {
+                costDisplayContainer.classList.add('critical');
+                if (timerInterval && cost % 100 < 1 && cost > 100) playWarning();
+            } else if (people > 15 || cost > 1000) {
+                costDisplayContainer.classList.add('extreme');
+                if (timerInterval && cost % 100 < 1 && cost > 100) playWarning();
+            } else if (people > 10 || cost > 500) {
+                costDisplayContainer.classList.add('danger');
+            } else if (people > 5 || cost > 200) {
+                costDisplayContainer.classList.add('warning');
+            }
+            // Default (no class) for ≤5 people and ≤$200
+
+            // Stop animations when timer is not running
+            if (!timerInterval) {
+                costDisplayContainer.classList.add('cost-stopped');
+            }
+        }
+
+        // All possible comparisons
+        const allComparisons = [
+            { emoji: '☕', name: 'lattes', cost: 5 },
+            { emoji: '🍔', name: 'burgers', cost: 12 },
+            { emoji: '🍕', name: 'pizzas', cost: 15 },
+            { emoji: '🎬', name: 'movie tickets', cost: 15 },
+            { emoji: '🍜', name: 'ramen bowls', cost: 18 },
+            { emoji: '🌯', name: 'burritos', cost: 10 },
+            { emoji: '🍱', name: 'lunch boxes', cost: 12 },
+            { emoji: '🎮', name: 'video games', cost: 60 },
+            { emoji: '📚', name: 'books', cost: 20 },
+            { emoji: '🎧', name: 'headphones', cost: 80 },
+            { emoji: '👕', name: 't-shirts', cost: 25 },
+            { emoji: '🎯', name: 'dartboards', cost: 40 },
+            { emoji: '🏋️', name: 'gym memberships', cost: 50 },
+            { emoji: '🌱', name: 'houseplants', cost: 30 },
+            { emoji: '🎨', name: 'art supplies sets', cost: 45 },
+            { emoji: '🔧', name: 'tool sets', cost: 75 },
+            { emoji: '✈️', name: 'flight tickets', cost: 200 },
+            { emoji: '💻', name: 'keyboards', cost: 100 },
+            { emoji: '🖥️', name: 'monitors', cost: 300 },
+            { emoji: '🚴', name: 'bike rentals', cost: 35 }
+        ];
+
+        // Randomize comparisons when timer starts
+        function selectRandomComparisons() {
+            const shuffled = [...allComparisons].sort(() => Math.random() - 0.5);
+            selectedComparisons = shuffled.slice(0, 6);
+        }
+
+        // Comparisons
+        function updateComparisons(cost) {
+            if (selectedComparisons.length === 0) return;
+
+            const comparisons = selectedComparisons
+                .filter(item => cost >= item.cost)
+                .map(item => `${item.emoji} ${Math.floor(cost / item.cost)} ${item.name}`);
+
+            // Display up to 6 items
+            comparisonList.innerHTML = comparisons.slice(0, 6)
+                .map(c => `<div class="comparison-item">${c}</div>`)
+                .join('');
+        }
+
+        // Achievements - real-time during meeting
+        function updateAchievements() {
+            let hasNewAchievement = false;
+
+            Object.keys(achievementDefs).forEach(key => {
+                const def = achievementDefs[key];
+                // Only check achievements that aren't marked as "onComplete"
+                if (!def.onComplete && def.condition() && !achievements[key]) {
+                    achievements[key] = true;
+                    playChing();
+                    hasNewAchievement = true;
+                }
+            });
+
+            // Only re-render if there's a new achievement
+            if (hasNewAchievement) {
+                renderAchievements();
+            }
+        }
+
+        // Check completion achievements (when meeting stops)
+        function checkCompletionAchievements() {
+            let hasNewAchievement = false;
+
+            Object.keys(achievementDefs).forEach(key => {
+                const def = achievementDefs[key];
+                // Only check achievements marked as "onComplete"
+                if (def.onComplete && def.condition() && !achievements[key]) {
+                    achievements[key] = true;
+                    playChing();
+                    hasNewAchievement = true;
+                }
+            });
+
+            // Only re-render if there's a new achievement
+            if (hasNewAchievement) {
+                renderAchievements();
+            }
+        }
+
+        function renderAchievements() {
+            achievementList.innerHTML = Object.keys(achievementDefs).map(key => {
+                const def = achievementDefs[key];
+                const unlocked = achievements[key];
+                return `<div class="achievement-badge ${unlocked ? 'unlocked' : 'locked'}" title="${def.description}">
+                    ${def.emoji} ${def.name}
+                </div>`;
+            }).join('');
+        }
+
+        // Cash register digit rolling effect
+        function updateCostWithRoll(cost) {
+            const formattedCost = `$${cost.toFixed(2)}`;
+            const currentText = costDisplay.textContent;
+
+            if (currentText === formattedCost) return; // No change, no animation
+
+            // Clear existing content
+            costDisplay.innerHTML = '';
+
+            // Create digit spans for each character
+            for (let i = 0; i < formattedCost.length; i++) {
+                const char = formattedCost[i];
+                const oldChar = currentText[i] || '';
+
+                const digitSpan = document.createElement('span');
+                digitSpan.className = 'cost-digit';
+
+                const innerSpan = document.createElement('span');
+                innerSpan.className = 'cost-digit-inner';
+                innerSpan.textContent = char;
+
+                digitSpan.appendChild(innerSpan);
+                costDisplay.appendChild(digitSpan);
+
+                // Only animate if the character changed and it's a number
+                if (char !== oldChar && /\d/.test(char)) {
+                    // Add rolling animation
+                    digitSpan.classList.add('rolling');
+                    // Remove animation class after it completes
+                    setTimeout(() => {
+                        digitSpan.classList.remove('rolling');
+                    }, 500);
+                }
+            }
+        }
+
+        // Main calculation
+        function calculateCost() {
+            const salary = parseFloat(salaryInput.value) || 0;
+            const people = parseInt(peopleInput.value) || 0;
+            const hours = seconds / 3600;
+            const cost = salary * people * hours;
+
+            // Update main cost with rolling effect
+            updateCostWithRoll(cost);
+
+            // Update metrics
+            const costPerSecond = (salary * people) / 3600;
+            const costPerMinute = (salary * people) / 60;
+            perSecond.textContent = `$${costPerSecond.toFixed(2)}`;
+            perMinute.textContent = `$${costPerMinute.toFixed(2)}`;
+
+            // Update rings
+            const minutes = Math.floor(seconds / 60);
+            updateRing(timeRing, Math.min((minutes / 120) * 100, 100), timeRingValue, `${minutes}m`);
+            updateRing(peopleRing, Math.min((people / 50) * 100, 100), peopleRingValue, people);
+            updateRing(costRing, Math.min((cost / 2000) * 100, 100), costRingValue, `$${Math.floor(cost)}`);
+
+            // Update other displays
+            updatePeopleVisual(people);
+            updateMeetingStatus(people);
+            updateCostDisplayStyle(people, cost);
+            updateComparisons(cost);
+            updateAchievements();
+
+            // Update money animation based on cost
+            if (timerInterval) {
+                updateMoneyAnimation();
+            }
+        }
+
+        // Timer functions
+        function startTimer() {
+            seconds = parseTime(timeInput.value);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            timeInput.disabled = true;
+
+            // Select random comparisons when meeting starts
+            selectRandomComparisons();
+
+            timerInterval = setInterval(() => {
+                seconds++;
+                timeInput.value = formatTime(seconds);
+                calculateCost();
+                playTick();
+            }, 1000);
+
+            updateMoneyAnimation();
+            calculateCost();
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            timeInput.disabled = false;
+            stopMoneyAnimation();
+            checkCompletionAchievements();
+            calculateCost();
+        }
+
+        function resetTimer() {
+            stopTimer();
+            seconds = 0;
+            timeInput.value = '00:00:00';
+            calculateCost();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger if typing in input
+            if (e.target.tagName === 'INPUT') return;
+
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    if (timerInterval) stopTimer();
+                    else startTimer();
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    resetTimer();
+                    break;
+                case '+':
+                case '=':
+                    e.preventDefault();
+                    peopleInput.value = parseInt(peopleInput.value) + 1;
+                    calculateCost();
+                    break;
+                case '-':
+                case '_':
+                    e.preventDefault();
+                    peopleInput.value = Math.max(1, parseInt(peopleInput.value) - 1);
+                    calculateCost();
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+                    break;
+            }
+        });
+
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        salaryInput.addEventListener('input', calculateCost);
+        peopleInput.addEventListener('input', calculateCost);
+
+        timeInput.addEventListener('input', (e) => {
+            if (!timerInterval) {
+                seconds = parseTime(e.target.value);
+                calculateCost();
+            }
+        });
+
+        timeInput.addEventListener('blur', (e) => {
+            if (!timerInterval) {
+                e.target.value = formatTime(seconds);
+            }
+        });
+
+        // Initialize
+        initTheme();
+        renderAchievements();
+        selectRandomComparisons();
+        calculateCost();
+    </script>
+</body>
+</html>

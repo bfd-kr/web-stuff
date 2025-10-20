@@ -4,7 +4,11 @@ This file provides context for Claude AI when working with this project.
 
 ## Project Overview
 
-This repository is designed to host web applications using nginx in Docker containers. The initial setup includes static content serving, but can be expanded to support multiple web applications.
+This repository hosts interactive web applications using nginx in Docker containers. Currently includes two production-ready applications:
+- **Meeting Cost Calculator**: Interactive tool for visualizing meeting costs in real-time
+- **Project Name Race**: Fun racing game for team decision-making
+
+The project is designed for easy expansion with additional static web applications.
 
 ## Architecture
 
@@ -17,14 +21,30 @@ This repository is designed to host web applications using nginx in Docker conta
 
 - `Dockerfile`: Defines the nginx container configuration
 - `webapp/static/`: Contains all static web content
+  - `index.html`: Main landing page with app links
+  - `meeting-cost-calculator.html`: Meeting cost tracking application
+  - `name-race.html`: Interactive racing game
+- `run.sh`: Automated build and deployment script
 - `.dockerignore`: Excludes unnecessary files from Docker builds
+- `meeting-cost-calculator-prompts.txt`: Development history and prompts used to create the calculator
 
 ## Development Workflow
 
+### Quick Start (Recommended)
+```bash
+./run.sh
+```
+
+### Manual Steps
 1. Modify content in `webapp/static/`
-2. Build Docker image: `docker build -t web-apps .`
-3. Run container: `docker run -d -p 8080:80 web-apps`
+2. Build Docker image: `nerdctl build -t web-apps .`
+3. Run container: `nerdctl run -d -p 8080:80 --name web-apps-container web-apps`
 4. Test at `http://localhost:8080`
+
+### Current Applications
+- Main page: `http://localhost:8080/`
+- Meeting Cost Calculator: `http://localhost:8080/meeting-cost-calculator.html`
+- Project Name Race: `http://localhost:8080/name-race.html`
 
 ## Future Enhancements
 
