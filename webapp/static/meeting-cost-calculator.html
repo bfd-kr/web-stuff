@@ -887,6 +887,7 @@
         let moneyAnimationInterval = null;
         let previousPeopleCount = 0;
         let selectedComparisons = [];
+        let loadingFromURL = false;
 
         // Elements
         const salaryInput = document.getElementById('salary');
@@ -1304,6 +1305,14 @@
             }
         }
 
+        // AI Request pricing calculation
+        // Based on Claude Sonnet 4.5: Input $3/MTok, Output $15/MTok
+        // Average request: ~1500 input tokens + ~1500 output tokens
+        // Cost per request: (1500 * $0.000003) + (1500 * $0.000015) = $0.0045 + $0.0225 = $0.027
+        // Rounded to $0.02 per request for typical usage
+        // So $1 = 50 AI requests
+        const aiRequestsPerDollar = 50;
+
         // All possible comparisons
         const allComparisons = [
             { emoji: '☕', name: 'lattes', cost: 5 },
@@ -1336,11 +1345,27 @@
 
         // Comparisons
         function updateComparisons(cost) {
-            if (selectedComparisons.length === 0) return;
+            const comparisons = [];
 
-            const comparisons = selectedComparisons
-                .filter(item => cost >= item.cost)
-                .map(item => `${item.emoji} ${Math.floor(cost / item.cost)} ${item.name}`);
+            // Always add AI Requests first
+            const totalRequests = Math.floor(cost * aiRequestsPerDollar);
+            let requestsDisplay;
+            if (totalRequests >= 1000000) {
+                requestsDisplay = `${(totalRequests / 1000000).toFixed(1)}M AI requests`;
+            } else if (totalRequests >= 1000) {
+                requestsDisplay = `${(totalRequests / 1000).toFixed(1)}K AI requests`;
+            } else {
+                requestsDisplay = `${totalRequests} AI requests`;
+            }
+            comparisons.push(`🤖 ${requestsDisplay}`);
+
+            // Add other comparisons
+            if (selectedComparisons.length > 0) {
+                const otherComparisons = selectedComparisons
+                    .filter(item => cost >= item.cost)
+                    .map(item => `${item.emoji} ${Math.floor(cost / item.cost)} ${item.name}`);
+                comparisons.push(...otherComparisons);
+            }
 
             // Display up to 6 items
             comparisonList.innerHTML = comparisons.slice(0, 6)
@@ -1470,8 +1495,52 @@
             }
         }
 
+        // URL hash parameter sharing
+        function updateURLHash() {
+            const params = new URLSearchParams();
+            params.set('rate', salaryInput.value);
+            params.set('people', peopleInput.value);
+            params.set('time', seconds);
+            params.set('running', timerInterval ? '1' : '0');
+            window.location.hash = params.toString();
+        }
+
+        function loadFromURLHash() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return;
+
+            loadingFromURL = true;
+            const params = new URLSearchParams(hash);
+
+            if (params.has('rate')) {
+                salaryInput.value = params.get('rate');
+            }
+            if (params.has('people')) {
+                peopleInput.value = params.get('people');
+            }
+            if (params.has('time')) {
+                seconds = parseInt(params.get('time')) || 0;
+                timeInput.value = formatTime(seconds);
+            }
+
+            calculateCost();
+
+            if (params.has('running') && params.get('running') === '1') {
+                // Auto-start if it was running when shared
+                setTimeout(() => {
+                    loadingFromURL = false;
+                    startTimer();
+                }, 100);
+            } else {
+                loadingFromURL = false;
+            }
+        }
+
         // Timer functions
         function startTimer() {
+            // Prevent starting if already running
+            if (timerInterval) return;
+
             seconds = parseTime(timeInput.value);
             startBtn.disabled = true;
             stopBtn.disabled = false;
@@ -1485,10 +1554,16 @@
                 timeInput.value = formatTime(seconds);
                 calculateCost();
                 playTick();
+                updateURLHash();
             }, 1000);
 
             updateMoneyAnimation();
             calculateCost();
+
+            // Don't update URL hash if we're loading from URL
+            if (!loadingFromURL) {
+                updateURLHash();
+            }
         }
 
         function stopTimer() {
@@ -1500,13 +1575,19 @@
             stopMoneyAnimation();
             checkCompletionAchievements();
             calculateCost();
+            updateURLHash();
         }
 
         function resetTimer() {
             stopTimer();
             seconds = 0;
             timeInput.value = '00:00:00';
+            // Clear achievements on reset
+            achievements = {};
+            localStorage.removeItem('achievements');
+            renderAchievements();
             calculateCost();
+            updateURLHash();
         }
 
         // Keyboard shortcuts
@@ -1564,10 +1645,15 @@
             }
         });
 
+        // Update hash whenever inputs change
+        salaryInput.addEventListener('change', updateURLHash);
+        peopleInput.addEventListener('change', updateURLHash);
+
         // Initialize
         initTheme();
         renderAchievements();
         selectRandomComparisons();
+        loadFromURLHash();
         calculateCost();
     </script>
 </body>
