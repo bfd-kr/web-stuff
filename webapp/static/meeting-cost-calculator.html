@@ -882,6 +882,8 @@
         // State
         let timerInterval = null;
         let seconds = 0;
+        let startTime = null; // Track when timer started
+        let pausedSeconds = 0; // Track seconds when paused
         let soundEnabled = false;
         let achievements = {};
         let moneyAnimationInterval = null;
@@ -1541,7 +1543,10 @@
             // Prevent starting if already running
             if (timerInterval) return;
 
-            seconds = parseTime(timeInput.value);
+            // Store initial seconds and start time
+            pausedSeconds = parseTime(timeInput.value);
+            startTime = Date.now();
+
             startBtn.disabled = true;
             stopBtn.disabled = false;
             timeInput.disabled = true;
@@ -1550,7 +1555,9 @@
             selectRandomComparisons();
 
             timerInterval = setInterval(() => {
-                seconds++;
+                // Calculate elapsed time based on actual time difference
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                seconds = pausedSeconds + elapsed;
                 timeInput.value = formatTime(seconds);
                 calculateCost();
                 playTick();
@@ -1569,6 +1576,8 @@
         function stopTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
+            startTime = null;
+            pausedSeconds = seconds; // Save current seconds for resume
             startBtn.disabled = false;
             stopBtn.disabled = true;
             timeInput.disabled = false;
@@ -1581,6 +1590,7 @@
         function resetTimer() {
             stopTimer();
             seconds = 0;
+            pausedSeconds = 0;
             timeInput.value = '00:00:00';
             // Clear achievements on reset
             achievements = {};
