@@ -10,11 +10,19 @@ This repository hosts interactive web applications using nginx in Docker contain
 
 The project is designed for easy expansion with additional static web applications.
 
+## Live Site
+
+**GitHub Pages**: https://bfd-kr.github.io/web-stuff/
+
+- Main page: https://bfd-kr.github.io/web-stuff/
+- Meeting Cost Calculator: https://bfd-kr.github.io/web-stuff/meeting-cost-calculator.html
+- Project Name Race: https://bfd-kr.github.io/web-stuff/name-race.html
+
 ## Architecture
 
 - **Web Server**: nginx (Alpine Linux based)
 - **Content Type**: Static HTML/CSS/JS
-- **Deployment**: Docker containerization
+- **Deployment**: Docker containerization + GitHub Pages (auto-deployed via GitHub Actions)
 - **Port**: 80 (internal), configurable external port
 
 ## Key Files
@@ -26,7 +34,28 @@ The project is designed for easy expansion with additional static web applicatio
   - `name-race.html`: Interactive racing game
 - `run.sh`: Automated build and deployment script
 - `.dockerignore`: Excludes unnecessary files from Docker builds
+- `.github/workflows/deploy-pages.yml`: GitHub Actions workflow for auto-deploying to GitHub Pages
 - `meeting-cost-calculator-prompts.txt`: Development history and prompts used to create the calculator
+
+## Meeting Cost Calculator Features
+
+- **Real-time cost tracking**: Timer with start/stop/reset, calculates salary burn rate
+- **Blended hourly rate**: Configurable rate per person
+- **Number of attendees**: Visual representation with icons
+- **Additional costs**:
+  - Travel costs (# travelers × avg travel cost)
+  - Venue/catering total
+- **Tiered comparison items**: Shows what the meeting could buy, scaling with cost:
+  - Cheap ($0-100): lattes, burgers, books
+  - Medium ($100-1K): AirPods, iPads, guitars
+  - Expensive ($1K-10K): Rolexes, motorcycles, engagement rings
+  - Very Expensive ($10K-100K): Teslas, speedboats, Porsches
+  - Insane ($100K+): houses, private jets, SpaceX seats
+- **URL sharing**: Share meeting state via URL hash parameters
+- **Dark mode**: Toggle between light and dark themes
+- **Keyboard shortcuts**: Space (start/stop), R (reset), +/- (people), D (dark mode)
+- **Achievements**: Unlockable badges for meeting milestones
+- **Money animation**: Falling money that scales with burn rate
 
 ## Development Workflow
 
@@ -53,7 +82,6 @@ Potential additions to consider:
 - Nginx configuration file for custom routing
 - SSL/TLS support for HTTPS
 - Environment-based configuration
-- CI/CD pipeline for automated deployments
 - Health check endpoints
 - Logging and monitoring setup
 
