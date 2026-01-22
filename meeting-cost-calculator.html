@@ -737,6 +737,40 @@
             font-family: monospace;
             font-size: 11px;
         }
+
+        .additional-costs {
+            margin-top: 10px;
+            padding: 15px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+        }
+
+        .additional-costs-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .additional-costs-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 700px) {
+            .additional-costs-row {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .travel-subtotal {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -796,6 +830,29 @@
                             <button id="startBtn" class="btn-start">Start</button>
                             <button id="stopBtn" class="btn-stop" disabled>Stop</button>
                             <button id="resetBtn" class="btn-reset">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="additional-costs">
+                    <div class="additional-costs-title">✈️ Additional Costs</div>
+                    <div class="additional-costs-row">
+                        <div class="input-group compact">
+                            <label for="travelers">People Traveling</label>
+                            <input type="number" id="travelers" value="0" min="0" step="1">
+                        </div>
+                        <div class="input-group compact">
+                            <label for="travelCost">Avg Travel Cost</label>
+                            <div class="input-prefix">
+                                <input type="number" id="travelCost" value="0" min="0" step="0.01">
+                            </div>
+                            <div class="travel-subtotal" id="travelSubtotal">= $0.00 travel total</div>
+                        </div>
+                        <div class="input-group compact">
+                            <label for="venueCost">Venue / Catering</label>
+                            <div class="input-prefix">
+                                <input type="number" id="venueCost" value="0" min="0" step="0.01">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -895,6 +952,10 @@
         const salaryInput = document.getElementById('salary');
         const peopleInput = document.getElementById('people');
         const timeInput = document.getElementById('time');
+        const travelersInput = document.getElementById('travelers');
+        const travelCostInput = document.getElementById('travelCost');
+        const venueCostInput = document.getElementById('venueCost');
+        const travelSubtotal = document.getElementById('travelSubtotal');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const resetBtn = document.getElementById('resetBtn');
@@ -1175,11 +1236,25 @@
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
-        function getCurrentCost() {
+        function getTimeCost() {
             const salary = parseFloat(salaryInput.value) || 0;
             const people = parseInt(peopleInput.value) || 0;
             const hours = seconds / 3600;
             return salary * people * hours;
+        }
+
+        function getTravelCost() {
+            const travelers = parseInt(travelersInput.value) || 0;
+            const avgCost = parseFloat(travelCostInput.value) || 0;
+            return travelers * avgCost;
+        }
+
+        function getVenueCost() {
+            return parseFloat(venueCostInput.value) || 0;
+        }
+
+        function getCurrentCost() {
+            return getTimeCost() + getTravelCost() + getVenueCost();
         }
 
         // Progress rings
@@ -1315,34 +1390,87 @@
         // So $1 = 50 AI requests
         const aiRequestsPerDollar = 50;
 
-        // All possible comparisons
-        const allComparisons = [
-            { emoji: '☕', name: 'lattes', cost: 5 },
-            { emoji: '🍔', name: 'burgers', cost: 12 },
-            { emoji: '🍕', name: 'pizzas', cost: 15 },
-            { emoji: '🎬', name: 'movie tickets', cost: 15 },
-            { emoji: '🍜', name: 'ramen bowls', cost: 18 },
-            { emoji: '🌯', name: 'burritos', cost: 10 },
-            { emoji: '🍱', name: 'lunch boxes', cost: 12 },
-            { emoji: '🎮', name: 'video games', cost: 60 },
-            { emoji: '📚', name: 'books', cost: 20 },
-            { emoji: '🎧', name: 'headphones', cost: 80 },
-            { emoji: '👕', name: 't-shirts', cost: 25 },
-            { emoji: '🎯', name: 'dartboards', cost: 40 },
-            { emoji: '🏋️', name: 'gym memberships', cost: 50 },
-            { emoji: '🌱', name: 'houseplants', cost: 30 },
-            { emoji: '🎨', name: 'art supplies sets', cost: 45 },
-            { emoji: '🔧', name: 'tool sets', cost: 75 },
-            { emoji: '✈️', name: 'flight tickets', cost: 200 },
-            { emoji: '💻', name: 'keyboards', cost: 100 },
-            { emoji: '🖥️', name: 'monitors', cost: 300 },
-            { emoji: '🚴', name: 'bike rentals', cost: 35 }
-        ];
+        // Tiered comparisons - from cheap to insanely expensive
+        const comparisonTiers = {
+            // Tier 1: $0-100 (coffee and snacks)
+            cheap: [
+                { emoji: '☕', name: 'lattes', cost: 5 },
+                { emoji: '🍔', name: 'burgers', cost: 12 },
+                { emoji: '🍕', name: 'pizzas', cost: 15 },
+                { emoji: '🌯', name: 'burritos', cost: 10 },
+                { emoji: '🍜', name: 'ramen bowls', cost: 18 },
+                { emoji: '🍱', name: 'lunch boxes', cost: 12 },
+                { emoji: '📚', name: 'books', cost: 20 },
+                { emoji: '👕', name: 't-shirts', cost: 25 },
+                { emoji: '🌱', name: 'houseplants', cost: 30 }
+            ],
+            // Tier 2: $100-1000 (nice things)
+            medium: [
+                { emoji: '🎮', name: 'video games', cost: 60 },
+                { emoji: '🎧', name: 'AirPods', cost: 180 },
+                { emoji: '💻', name: 'mechanical keyboards', cost: 150 },
+                { emoji: '🎬', name: 'concert tickets', cost: 120 },
+                { emoji: '🖥️', name: 'monitors', cost: 300 },
+                { emoji: '📱', name: 'iPads', cost: 450 },
+                { emoji: '🎸', name: 'guitars', cost: 400 },
+                { emoji: '🛋️', name: 'fancy chairs', cost: 500 },
+                { emoji: '✈️', name: 'weekend trips', cost: 600 }
+            ],
+            // Tier 3: $1000-10000 (getting spicy)
+            expensive: [
+                { emoji: '💎', name: 'Rolexes', cost: 8000 },
+                { emoji: '🏍️', name: 'motorcycles', cost: 9000 },
+                { emoji: '🎹', name: 'grand pianos', cost: 7000 },
+                { emoji: '💍', name: 'engagement rings', cost: 5000 },
+                { emoji: '🏖️', name: 'luxury vacations', cost: 4000 },
+                { emoji: '🎿', name: 'ski trips', cost: 3000 },
+                { emoji: '📸', name: 'pro camera setups', cost: 3500 },
+                { emoji: '🖼️', name: 'original artworks', cost: 2500 },
+                { emoji: '🛵', name: 'Vespas', cost: 6000 }
+            ],
+            // Tier 4: $10000-100000 (big money)
+            veryExpensive: [
+                { emoji: '🚗', name: 'Teslas', cost: 45000 },
+                { emoji: '🛥️', name: 'speedboats', cost: 35000 },
+                { emoji: '🏎️', name: 'Porsches', cost: 80000 },
+                { emoji: '💒', name: 'weddings', cost: 30000 },
+                { emoji: '🎓', name: 'college tuitions', cost: 50000 },
+                { emoji: '🏠', name: 'home down payments', cost: 60000 },
+                { emoji: '⛵', name: 'sailboats', cost: 25000 },
+                { emoji: '🚐', name: 'camper vans', cost: 55000 },
+                { emoji: '💎', name: 'diamond necklaces', cost: 20000 }
+            ],
+            // Tier 5: $100000+ (absolutely unhinged)
+            insane: [
+                { emoji: '🏡', name: 'houses', cost: 400000 },
+                { emoji: '🏢', name: 'NYC apartments', cost: 800000 },
+                { emoji: '🛩️', name: 'private jets', cost: 3000000 },
+                { emoji: '🚀', name: 'SpaceX seats', cost: 55000000 },
+                { emoji: '🏝️', name: 'private islands', cost: 5000000 },
+                { emoji: '🦁', name: 'wildlife sanctuaries', cost: 2000000 },
+                { emoji: '🎰', name: 'casino buyouts', cost: 10000000 },
+                { emoji: '🏰', name: 'Scottish castles', cost: 1500000 },
+                { emoji: '⚽', name: 'soccer teams', cost: 50000000 }
+            ]
+        };
+
+        // Get appropriate tier based on cost
+        function getComparisonTier(cost) {
+            if (cost >= 100000) return 'insane';
+            if (cost >= 10000) return 'veryExpensive';
+            if (cost >= 1000) return 'expensive';
+            if (cost >= 100) return 'medium';
+            return 'cheap';
+        }
 
         // Randomize comparisons when timer starts
         function selectRandomComparisons() {
-            const shuffled = [...allComparisons].sort(() => Math.random() - 0.5);
-            selectedComparisons = shuffled.slice(0, 6);
+            // Select random items from each tier
+            selectedComparisons = {};
+            Object.keys(comparisonTiers).forEach(tier => {
+                const shuffled = [...comparisonTiers[tier]].sort(() => Math.random() - 0.5);
+                selectedComparisons[tier] = shuffled.slice(0, 3);
+            });
         }
 
         // Comparisons
@@ -1361,13 +1489,44 @@
             }
             comparisons.push(`🤖 ${requestsDisplay}`);
 
-            // Add other comparisons
-            if (selectedComparisons.length > 0) {
-                const otherComparisons = selectedComparisons
-                    .filter(item => cost >= item.cost)
-                    .map(item => `${item.emoji} ${Math.floor(cost / item.cost)} ${item.name}`);
-                comparisons.push(...otherComparisons);
-            }
+            // Determine which tiers to show based on cost
+            const currentTier = getComparisonTier(cost);
+            const tierOrder = ['cheap', 'medium', 'expensive', 'veryExpensive', 'insane'];
+            const currentTierIndex = tierOrder.indexOf(currentTier);
+
+            // Show items from current tier and one tier below (for context)
+            const tiersToShow = tierOrder.slice(Math.max(0, currentTierIndex - 1), currentTierIndex + 2);
+
+            // Gather comparisons from relevant tiers
+            const otherComparisons = [];
+            tiersToShow.forEach(tier => {
+                if (selectedComparisons[tier]) {
+                    selectedComparisons[tier]
+                        .filter(item => cost >= item.cost)
+                        .forEach(item => {
+                            const count = Math.floor(cost / item.cost);
+                            if (count > 0) {
+                                // Format large numbers nicely
+                                let countDisplay;
+                                if (count >= 1000000) {
+                                    countDisplay = `${(count / 1000000).toFixed(1)}M`;
+                                } else if (count >= 1000) {
+                                    countDisplay = `${(count / 1000).toFixed(1)}K`;
+                                } else {
+                                    countDisplay = count.toString();
+                                }
+                                otherComparisons.push({
+                                    text: `${item.emoji} ${countDisplay} ${item.name}`,
+                                    cost: item.cost
+                                });
+                            }
+                        });
+                }
+            });
+
+            // Sort by item cost descending (show expensive stuff first)
+            otherComparisons.sort((a, b) => b.cost - a.cost);
+            comparisons.push(...otherComparisons.map(c => c.text));
 
             // Display up to 6 items
             comparisonList.innerHTML = comparisons.slice(0, 6)
@@ -1467,7 +1626,13 @@
             const salary = parseFloat(salaryInput.value) || 0;
             const people = parseInt(peopleInput.value) || 0;
             const hours = seconds / 3600;
-            const cost = salary * people * hours;
+            const timeCost = salary * people * hours;
+            const travelCost = getTravelCost();
+            const venueCost = getVenueCost();
+            const cost = timeCost + travelCost + venueCost;
+
+            // Update travel subtotal display
+            travelSubtotal.textContent = `= $${travelCost.toFixed(2)} travel total`;
 
             // Update main cost with rolling effect
             updateCostWithRoll(cost);
@@ -1504,6 +1669,9 @@
             params.set('people', peopleInput.value);
             params.set('time', seconds);
             params.set('running', timerInterval ? '1' : '0');
+            params.set('travelers', travelersInput.value);
+            params.set('travelCost', travelCostInput.value);
+            params.set('venue', venueCostInput.value);
             window.location.hash = params.toString();
         }
 
@@ -1523,6 +1691,15 @@
             if (params.has('time')) {
                 seconds = parseInt(params.get('time')) || 0;
                 timeInput.value = formatTime(seconds);
+            }
+            if (params.has('travelers')) {
+                travelersInput.value = params.get('travelers');
+            }
+            if (params.has('travelCost')) {
+                travelCostInput.value = params.get('travelCost');
+            }
+            if (params.has('venue')) {
+                venueCostInput.value = params.get('venue');
             }
 
             calculateCost();
@@ -1592,6 +1769,10 @@
             seconds = 0;
             pausedSeconds = 0;
             timeInput.value = '00:00:00';
+            // Clear additional costs on reset
+            travelersInput.value = '0';
+            travelCostInput.value = '0';
+            venueCostInput.value = '0';
             // Clear achievements on reset
             achievements = {};
             localStorage.removeItem('achievements');
@@ -1641,6 +1822,9 @@
         resetBtn.addEventListener('click', resetTimer);
         salaryInput.addEventListener('input', calculateCost);
         peopleInput.addEventListener('input', calculateCost);
+        travelersInput.addEventListener('input', calculateCost);
+        travelCostInput.addEventListener('input', calculateCost);
+        venueCostInput.addEventListener('input', calculateCost);
 
         timeInput.addEventListener('input', (e) => {
             if (!timerInterval) {
@@ -1658,6 +1842,9 @@
         // Update hash whenever inputs change
         salaryInput.addEventListener('change', updateURLHash);
         peopleInput.addEventListener('change', updateURLHash);
+        travelersInput.addEventListener('change', updateURLHash);
+        travelCostInput.addEventListener('change', updateURLHash);
+        venueCostInput.addEventListener('change', updateURLHash);
 
         // Initialize
         initTheme();
