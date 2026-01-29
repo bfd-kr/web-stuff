@@ -464,6 +464,59 @@
             border-color: #ffd700;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
         }
+
+        .chart-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .no-data-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1em;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -487,6 +540,7 @@
                         <div class="emoji-option" data-emoji="🐕" onclick="selectEmoji('🐕')" title="Dog">🐕</div>
                         <div class="emoji-option" data-emoji="🐎" onclick="selectEmoji('🐎')" title="Horse">🐎</div>
                         <div class="emoji-option" data-emoji="🐫" onclick="selectEmoji('🐫')" title="Camel">🐫</div>
+                        <div class="emoji-option" data-emoji="🐢" onclick="selectEmoji('🐢')" title="Turtle">🐢</div>
                     </div>
                 </div>
 
@@ -495,6 +549,15 @@
 
                 <div class="tally-section-title">📊 Strategy Win Tallies</div>
                 <div class="strategy-tally" id="strategyTally"></div>
+
+                <div class="chart-section">
+                    <div class="tally-section-title" style="margin-top: 0;">📈 Wins Over Time</div>
+                    <div class="chart-container">
+                        <canvas id="winsChart" class="chart-canvas"></canvas>
+                        <div class="no-data-message" id="noDataMessage">Run some races to see the chart! 🏁</div>
+                    </div>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
 
                 <div id="raceTrack"></div>
 
@@ -541,6 +604,8 @@
         let strategyTally = [0, 0, 0, 0]; // Track wins for each strategy
         let previousNames = [];
         let selectedRacerEmoji = '🐕'; // Default to dog
+        let winHistory = []; // Track cumulative wins after each race: [{race: 1, wins: [0, 1, 0]}, ...]
+        let raceNumber = 0;
 
         function initializeRacers(count) {
             numRacers = Math.max(2, Math.min(count, 10)); // Min 2, max 10
@@ -564,7 +629,18 @@
                 alert('Maximum 10 racers allowed!');
                 return;
             }
-            initializeRacers(numRacers + 1);
+            // Preserve existing data when adding
+            numRacers++;
+            names.push(DEFAULT_NAMES[numRacers - 1] || `Racer ${numRacers}`);
+            winTally.push(0);
+            positions.push(0);
+            // Reset chart since data structure changed
+            winHistory = [];
+            raceNumber = 0;
+            previousNames = [...names];
+            renderRacers();
+            updateStrategyTallyDisplay();
+            updateWinsChart();
         }
 
         function removeRacer() {
@@ -572,7 +648,18 @@
                 alert('Minimum 2 racers required!');
                 return;
             }
-            initializeRacers(numRacers - 1);
+            // Preserve existing data when removing
+            numRacers--;
+            names.pop();
+            winTally.pop();
+            positions.pop();
+            // Reset chart since data structure changed
+            winHistory = [];
+            raceNumber = 0;
+            previousNames = [...names];
+            renderRacers();
+            updateStrategyTallyDisplay();
+            updateWinsChart();
         }
 
         function renderRacers() {
@@ -736,11 +823,138 @@
             document.getElementById('strategyTally').innerHTML = strategyHTML;
         }
 
+        function updateWinsChart() {
+            const canvas = document.getElementById('winsChart');
+            const ctx = canvas.getContext('2d');
+            const noDataMsg = document.getElementById('noDataMessage');
+
+            // Set canvas size to match container
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            // Show/hide no data message
+            if (winHistory.length === 0) {
+                noDataMsg.style.display = 'block';
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+            noDataMsg.style.display = 'none';
+
+            // Chart dimensions
+            const padding = { top: 30, right: 30, bottom: 40, left: 50 };
+            const chartWidth = canvas.width - padding.left - padding.right;
+            const chartHeight = canvas.height - padding.top - padding.bottom;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Find max wins for Y axis
+            const maxWins = Math.max(...winHistory.flatMap(h => h.wins), 1);
+            const yStep = Math.ceil(maxWins / 5) || 1;
+            const yMax = Math.ceil(maxWins / yStep) * yStep;
+
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+
+            // Y axis grid
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + chartHeight - (i / 5) * chartHeight;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(padding.left + chartWidth, y);
+                ctx.stroke();
+
+                // Y axis labels
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.font = '12px Courier New';
+                ctx.textAlign = 'right';
+                ctx.fillText(Math.round((i / 5) * yMax), padding.left - 10, y + 4);
+            }
+
+            // X axis labels
+            ctx.textAlign = 'center';
+            const xStep = Math.max(1, Math.floor(winHistory.length / 10));
+            for (let i = 0; i < winHistory.length; i += xStep) {
+                const x = padding.left + (i / Math.max(1, winHistory.length - 1)) * chartWidth;
+                ctx.fillText(winHistory[i].race, x, canvas.height - padding.bottom + 20);
+            }
+            // Always show last race number
+            if (winHistory.length > 1) {
+                const lastX = padding.left + chartWidth;
+                ctx.fillText(winHistory[winHistory.length - 1].race, lastX, canvas.height - padding.bottom + 20);
+            }
+
+            // Axis labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 12px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText('Race #', padding.left + chartWidth / 2, canvas.height - 5);
+
+            ctx.save();
+            ctx.translate(15, padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Wins', 0, 0);
+            ctx.restore();
+
+            // Draw lines for each racer
+            for (let racerIdx = 0; racerIdx < numRacers; racerIdx++) {
+                ctx.strokeStyle = AVAILABLE_COLORS[racerIdx];
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+
+                for (let i = 0; i < winHistory.length; i++) {
+                    const x = padding.left + (winHistory.length === 1 ? chartWidth / 2 : (i / (winHistory.length - 1)) * chartWidth);
+                    const y = padding.top + chartHeight - (winHistory[i].wins[racerIdx] / yMax) * chartHeight;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+
+                // Draw points
+                ctx.fillStyle = AVAILABLE_COLORS[racerIdx];
+                for (let i = 0; i < winHistory.length; i++) {
+                    const x = padding.left + (winHistory.length === 1 ? chartWidth / 2 : (i / (winHistory.length - 1)) * chartWidth);
+                    const y = padding.top + chartHeight - (winHistory[i].wins[racerIdx] / yMax) * chartHeight;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Update legend
+            const legendHTML = names.map((name, i) => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: ${AVAILABLE_COLORS[i]}"></div>
+                    <span>${name}</span>
+                </div>
+            `).join('');
+            document.getElementById('chartLegend').innerHTML = legendHTML;
+        }
+
+        function recordRaceResult() {
+            raceNumber++;
+            winHistory.push({
+                race: raceNumber,
+                wins: [...winTally]
+            });
+            updateWinsChart();
+        }
+
         function resetTally() {
             winTally = Array(numRacers).fill(0);
             strategyTally = [0, 0, 0, 0];
+            winHistory = [];
+            raceNumber = 0;
             updateTallyDisplay();
             updateStrategyTallyDisplay();
+            updateWinsChart();
         }
 
         function checkNameChanges() {
@@ -754,8 +968,11 @@
 
             if (namesChanged) {
                 winTally = Array(numRacers).fill(0);
+                winHistory = [];
+                raceNumber = 0;
                 previousNames = [...names];
                 updateTallyDisplay();
+                updateWinsChart();
             }
         }
 
@@ -787,6 +1004,7 @@
             // Update win tally
             winTally[winnerIndex]++;
             updateTallyDisplay();
+            recordRaceResult();
 
             // Update strategy tally
             const winnerStrategy = strategies[winnerIndex];
@@ -875,6 +1093,13 @@
             initializeRacers(3);
             // Set default emoji selection
             document.querySelector('.emoji-option[data-emoji="🐕"]').classList.add('selected');
+            // Initialize chart
+            updateWinsChart();
+        });
+
+        // Redraw chart on window resize
+        window.addEventListener('resize', () => {
+            updateWinsChart();
         });
     </script>
 </body>
