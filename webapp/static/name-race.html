@@ -734,37 +734,45 @@
             const progressPct = progress;
             let advance = 0;
 
+            // All strategies balanced to ~3.5 WEIGHTED average
+            // Weights: Phase1=40%, Phase2=30%, Phase3=15%, Phase4=15%
             switch(strategy) {
                 case 0: // Fast start, fade finish
+                    // Weighted avg: 0.4*3.75 + 0.3*3.5 + 0.15*3.25 + 0.15*3.0 = 3.49
+                    // High variance early (exciting), low variance late (fading)
                     if (progressPct < 40) {
-                        advance = Math.random() * 3 + 3; // 3-6
+                        advance = Math.random() * 2.5 + 2.5; // 2.5-5 (avg 3.75)
                     } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2; // 2-4
+                        advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 2 + 1; // 1-3
+                        advance = Math.random() * 1.5 + 2.5; // 2.5-4 (avg 3.25)
                     } else {
-                        advance = Math.random() * 2; // 0-2
+                        advance = Math.random() * 2 + 2; // 2-4 (avg 3.0)
                     }
                     break;
 
                 case 1: // Slow start, surge finish (comeback)
+                    // Weighted avg: 0.4*3.25 + 0.3*3.5 + 0.15*3.75 + 0.15*4.0 = 3.51
+                    // Low variance early, high variance late (dramatic finish)
                     if (progressPct < 40) {
-                        advance = Math.random() * 2 + 1; // 1-3
+                        advance = Math.random() * 1.5 + 2.5; // 2.5-4 (avg 3.25)
                     } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2; // 2-4
+                        advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 3 + 3; // 3-6
+                        advance = Math.random() * 2.5 + 2.5; // 2.5-5 (avg 3.75)
                     } else {
-                        advance = Math.random() * 5 + 6; // 6-11
+                        advance = Math.random() * 3 + 2.5; // 2.5-5.5 (avg 4.0)
                     }
                     break;
 
                 case 2: // Steady pace
-                    advance = Math.random() * 2 + 2; // 2-4
+                    // Weighted avg: 3.5, low variance (predictable)
+                    advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
                     break;
 
                 case 3: // Inconsistent
-                    advance = Math.random() * 5 + 1; // 1-6
+                    // Weighted avg: 3.5, high variance (unpredictable/exciting)
+                    advance = Math.random() * 4 + 1.5; // 1.5-5.5 (avg 3.5)
                     break;
             }
 
