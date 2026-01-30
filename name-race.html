@@ -143,6 +143,62 @@
             );
         }
 
+        /* Strategy Visual Effects */
+        @keyframes fastStartGlow {
+            0%, 100% { box-shadow: 0 0 10px 2px rgba(255, 100, 0, 0.8); }
+            50% { box-shadow: 0 0 20px 5px rgba(255, 150, 0, 1); }
+        }
+
+        @keyframes comebackGlow {
+            0%, 100% { box-shadow: 0 0 10px 2px rgba(0, 200, 255, 0.8); }
+            50% { box-shadow: 0 0 25px 8px rgba(0, 255, 255, 1); }
+        }
+
+        @keyframes inconsistentShake {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-3px); }
+            75% { transform: translateY(3px); }
+        }
+
+        @keyframes sprintPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        @keyframes luckySparkle {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5) drop-shadow(0 0 8px gold); }
+        }
+
+        .strategy-fast-start .racer-progress {
+            animation: fastStartGlow 0.4s ease-in-out infinite;
+        }
+
+        .strategy-comeback .racer-progress {
+            animation: comebackGlow 0.5s ease-in-out infinite;
+        }
+
+        .strategy-steady .racer-progress {
+            box-shadow: 0 0 8px 2px rgba(100, 255, 100, 0.5);
+        }
+
+        .strategy-inconsistent .racer-progress {
+            animation: inconsistentShake 0.15s ease-in-out infinite;
+        }
+
+        .strategy-sprint .racer-progress {
+            animation: sprintPulse 0.3s ease-in-out infinite;
+        }
+
+        .strategy-lucky .racer-progress {
+            animation: luckySparkle 0.6s ease-in-out infinite;
+        }
+
+        .strategy-lucky.lucky-moment .racer-progress {
+            animation: luckySparkle 0.15s ease-in-out infinite;
+            filter: brightness(1.8) drop-shadow(0 0 15px gold);
+        }
+
         .controls {
             text-align: center;
             margin: 30px 0;
@@ -673,7 +729,9 @@
             '🚀 Fast Start/Fade',
             '⚡ Comeback Surge',
             '📈 Steady Pace',
-            '🎲 Inconsistent'
+            '🎲 Inconsistent',
+            '💨 Sprint/Rest',
+            '🍀 Lucky'
         ];
 
         let numRacers = 3;
@@ -684,7 +742,7 @@
         let raceFinished = false;
         let winner = null;
         let winTally = [];
-        let strategyTally = [0, 0, 0, 0]; // Track wins for each strategy
+        let strategyTally = Array(strategyNames.length).fill(0); // Track wins for each strategy
         let previousNames = [];
         let selectedRacerEmoji = '🐕'; // Default to dog
         let winHistory = []; // Track cumulative wins after each race: [{race: 1, wins: [0, 1, 0]}, ...]
@@ -813,52 +871,72 @@
         }
 
         function getRandomStrategy() {
-            return Math.floor(Math.random() * 4);
+            return Math.floor(Math.random() * strategyNames.length);
         }
 
         function calculateSpeed(strategy, progress) {
             const progressPct = progress;
             let advance = 0;
 
-            // All strategies balanced to ~3.5 WEIGHTED average
-            // Weights: Phase1=40%, Phase2=30%, Phase3=15%, Phase4=15%
+            // EXTREME profiles - more dramatic differences while maintaining balance
+            // All strategies target ~3.5 weighted average
             switch(strategy) {
-                case 0: // Fast start, fade finish
-                    // Weighted avg: 0.4*3.75 + 0.3*3.5 + 0.15*3.25 + 0.15*3.0 = 3.49
-                    // High variance early (exciting), low variance late (fading)
+                case 0: // Fast start, fade finish - EXTREME
+                    // Weighted: 0.4*5.0 + 0.3*3.5 + 0.15*2.5 + 0.15*1.5 = 3.65
                     if (progressPct < 40) {
-                        advance = Math.random() * 2.5 + 2.5; // 2.5-5 (avg 3.75)
+                        advance = Math.random() * 2 + 4; // 4-6 (avg 5.0) ZOOM!
                     } else if (progressPct < 70) {
                         advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 1.5 + 2.5; // 2.5-4 (avg 3.25)
+                        advance = Math.random() * 2 + 1.5; // 1.5-3.5 (avg 2.5)
                     } else {
+                        advance = Math.random() * 2 + 0.5; // 0.5-2.5 (avg 1.5) crawling...
+                    }
+                    break;
+
+                case 1: // Comeback surge - EXTREME
+                    // Weighted: 0.4*2.0 + 0.3*3.0 + 0.15*4.5 + 0.15*6.0 = 3.275
+                    if (progressPct < 40) {
+                        advance = Math.random() * 2 + 1; // 1-3 (avg 2.0) sluggish start
+                    } else if (progressPct < 70) {
                         advance = Math.random() * 2 + 2; // 2-4 (avg 3.0)
-                    }
-                    break;
-
-                case 1: // Slow start, surge finish (comeback)
-                    // Weighted avg: 0.4*3.25 + 0.3*3.5 + 0.15*3.75 + 0.15*4.0 = 3.51
-                    // Low variance early, high variance late (dramatic finish)
-                    if (progressPct < 40) {
-                        advance = Math.random() * 1.5 + 2.5; // 2.5-4 (avg 3.25)
-                    } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 2.5 + 2.5; // 2.5-5 (avg 3.75)
+                        advance = Math.random() * 3 + 3; // 3-6 (avg 4.5) building...
                     } else {
-                        advance = Math.random() * 3 + 2.5; // 2.5-5.5 (avg 4.0)
+                        advance = Math.random() * 4 + 4; // 4-8 (avg 6.0) SURGE!!!
                     }
                     break;
 
-                case 2: // Steady pace
-                    // Weighted avg: 3.5, low variance (predictable)
-                    advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
+                case 2: // Steady pace - reliable
+                    // Weighted: 3.5, very low variance
+                    advance = Math.random() * 1.5 + 2.75; // 2.75-4.25 (avg 3.5)
                     break;
 
-                case 3: // Inconsistent
-                    // Weighted avg: 3.5, high variance (unpredictable/exciting)
-                    advance = Math.random() * 4 + 1.5; // 1.5-5.5 (avg 3.5)
+                case 3: // Inconsistent - WILD
+                    // Weighted: 3.5, EXTREME variance
+                    advance = Math.random() * 6 + 0.5; // 0.5-6.5 (avg 3.5)
+                    break;
+
+                case 4: // Sprint/Rest - bursts of speed
+                    // Alternates between fast and slow based on "ticks"
+                    // Uses progress % to create sprint/rest cycles
+                    const sprintPhase = Math.floor(progressPct / 10) % 2 === 0;
+                    if (sprintPhase) {
+                        advance = Math.random() * 2 + 4.5; // 4.5-6.5 (avg 5.5) SPRINT!
+                    } else {
+                        advance = Math.random() * 2 + 0.5; // 0.5-2.5 (avg 1.5) resting...
+                    }
+                    // Overall avg: ~3.5
+                    break;
+
+                case 5: // Lucky - normal with rare big jumps
+                    // Base speed with 15% chance of big luck
+                    if (Math.random() < 0.15) {
+                        advance = Math.random() * 4 + 6; // 6-10 (avg 8) LUCKY!!!
+                    } else {
+                        advance = Math.random() * 2 + 2; // 2-4 (avg 3) normal
+                    }
+                    // Overall avg: 0.15*8 + 0.85*3 = 1.2 + 2.55 = 3.75
                     break;
             }
 
@@ -1043,7 +1121,7 @@
 
         function resetTally() {
             winTally = Array(numRacers).fill(0);
-            strategyTally = [0, 0, 0, 0];
+            strategyTally = Array(strategyNames.length).fill(0);
             winHistory = [];
             raceNumber = 0;
             updateTallyDisplay();
@@ -1172,10 +1250,20 @@
                 strategies.push(getRandomStrategy());
             }
 
-            // Show strategies
+            // Show strategies and apply visual effect classes
+            const strategyClasses = ['strategy-fast-start', 'strategy-comeback', 'strategy-steady',
+                                     'strategy-inconsistent', 'strategy-sprint', 'strategy-lucky'];
             for (let i = 0; i < numRacers; i++) {
                 document.getElementById(`strategy-${i}`).textContent = strategyNames[strategies[i]];
                 document.getElementById(`progress-${i}`).style.width = '0%';
+
+                // Apply strategy visual effect class
+                const racerEl = document.querySelector(`.racer-${i}`);
+                strategyClasses.forEach(cls => racerEl.classList.remove(cls));
+                racerEl.classList.remove('lucky-moment');
+                if (strategies[i] < strategyClasses.length) {
+                    racerEl.classList.add(strategyClasses[strategies[i]]);
+                }
             }
 
             // Start race
