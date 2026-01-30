@@ -882,33 +882,33 @@
             // Dramatic CHARACTER differences, similar FINISH TIMES
             switch(strategy) {
                 case 0: // Fast start, fade finish
-                    // Early lead, significant fade - still dramatic but balanced
+                    // Early lead, significant fade - slightly favored for exciting "can they hold on?" moments
                     if (progressPct < 40) {
-                        advance = Math.random() * 2 + 3.5; // 3.5-5.5 (avg 4.5) ZOOM!
+                        advance = Math.random() * 2 + 3.6; // 3.6-5.6 (avg 4.6) ZOOM!
                     } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8)
+                        advance = Math.random() * 2 + 2.9; // 2.9-4.9 (avg 3.9)
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
+                        advance = Math.random() * 2 + 2.6; // 2.6-4.6 (avg 3.6)
                     } else {
-                        advance = Math.random() * 2 + 1.5; // 1.5-3.5 (avg 2.5) fading!
+                        advance = Math.random() * 2 + 1.8; // 1.8-3.8 (avg 2.8) fading!
                     }
                     break;
 
                 case 1: // Comeback surge
-                    // Behind early, dramatic finish - but not too far behind
+                    // Behind early, dramatic finish - competitive with exciting surge potential
                     if (progressPct < 40) {
-                        advance = Math.random() * 2 + 2.2; // 2.2-4.2 (avg 3.2) warming up
+                        advance = Math.random() * 2 + 2.3; // 2.3-4.3 (avg 3.3) warming up
                     } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8) building
+                        advance = Math.random() * 2 + 2.9; // 2.9-4.9 (avg 3.9) building
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 2 + 3.5; // 3.5-5.5 (avg 4.5) surging
+                        advance = Math.random() * 2 + 3.6; // 3.6-5.6 (avg 4.6) surging
                     } else {
-                        advance = Math.random() * 2 + 4.8; // 4.8-6.8 (avg 5.8) SURGE!
+                        advance = Math.random() * 2 + 5; // 5-7 (avg 6) SURGE!
                     }
                     break;
 
                 case 2: // Steady pace - the reliable baseline
-                    advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8)
+                    advance = Math.random() * 2 + 2.85; // 2.85-4.85 (avg 3.85)
                     break;
 
                 case 3: // Inconsistent - exciting variance
@@ -921,9 +921,9 @@
                     if (sprintPhase) {
                         advance = Math.random() * 2 + 4; // 4-6 (avg 5.0) SPRINT!
                     } else {
-                        advance = Math.random() * 2 + 1.8; // 1.8-3.8 (avg 2.8) resting
+                        advance = Math.random() * 2 + 1.9; // 1.9-3.9 (avg 2.9) resting
                     }
-                    // Overall: ~3.9 avg
+                    // Overall: ~3.95 avg
                     break;
 
                 case 5: // Lucky - suspenseful randomness
