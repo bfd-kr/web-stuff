@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏁 Project Name Race</title>
     <style>
+        :root {
+            --bg-gradient-1: #1a1a2e;
+            --bg-gradient-2: #0f0f1e;
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --accent-color: #ffd700;
+            --container-bg: rgba(0, 0, 0, 0.3);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode {
+            --bg-gradient-1: #667eea;
+            --bg-gradient-2: #764ba2;
+            --text-primary: #1a1a2e;
+            --text-secondary: #333;
+            --text-muted: #555;
+            --accent-color: #d4a800;
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(0, 0, 0, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: rgba(0, 0, 0, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,38 +39,72 @@
 
         body {
             font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
-            color: #fff;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            color: var(--text-primary);
             padding: 20px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
         }
 
         .header {
             text-align: center;
             margin-bottom: 40px;
-            border: 3px solid #ffd700;
+            border: 3px solid var(--accent-color);
             padding: 20px;
             border-radius: 10px;
             background: rgba(255, 215, 0, 0.1);
+            position: relative;
         }
 
         .header h1 {
             font-size: 2.5em;
-            color: #ffd700;
+            color: var(--accent-color);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .theme-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .theme-btn.active {
+            background: var(--accent-color);
         }
 
         .race-container {
             width: 90%;
             max-width: 1400px;
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--container-bg);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .race-container {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
         .main-layout {
@@ -303,15 +363,16 @@
         }
 
         .name-input-section {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--container-bg);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .name-input-section h3 {
-            color: #ffd700;
+            color: var(--accent-color);
             margin-bottom: 15px;
             text-align: center;
         }
@@ -370,17 +431,17 @@
         .name-input {
             padding: 10px;
             border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            border: 2px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
             font-family: 'Courier New', monospace;
             font-size: 1em;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, background 0.3s, color 0.3s;
         }
 
         .name-input:focus {
             outline: none;
-            border-color: #ffd700;
+            border-color: var(--accent-color);
         }
 
         .name-input-0 {
@@ -406,10 +467,11 @@
         .tally-item {
             text-align: center;
             padding: 15px 25px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--input-bg);
             border-radius: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--border-color);
             min-width: 150px;
+            transition: all 0.3s ease;
         }
 
         .tally-name {
@@ -421,7 +483,7 @@
         .tally-count {
             font-size: 2em;
             font-weight: bold;
-            color: #ffd700;
+            color: var(--accent-color);
         }
 
         .tally-label {
@@ -463,13 +525,14 @@
             border-radius: 10px;
             border: 2px solid rgba(255, 215, 0, 0.3);
             min-width: 140px;
+            transition: all 0.3s ease;
         }
 
         .strategy-tally-name {
             font-size: 0.9em;
             font-weight: bold;
             margin-bottom: 6px;
-            color: #ffd700;
+            color: var(--accent-color);
         }
 
         .strategy-tally-count {
@@ -486,7 +549,7 @@
 
         .tally-section-title {
             text-align: center;
-            color: #ffd700;
+            color: var(--accent-color);
             font-size: 1.1em;
             margin: 25px 0 10px 0;
             font-weight: bold;
@@ -501,8 +564,8 @@
         }
 
         .emoji-option {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
             padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
@@ -515,18 +578,23 @@
             transform: scale(1.1);
         }
 
+        body.light-mode .emoji-option:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
         .emoji-option.selected {
             background: rgba(255, 215, 0, 0.3);
-            border-color: #ffd700;
+            border-color: var(--accent-color);
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
         }
 
         .chart-section {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--container-bg);
             padding: 20px;
             border-radius: 10px;
             margin-top: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .chart-container {
@@ -587,16 +655,17 @@
             padding: 8px 10px;
             border-radius: 8px;
             border: 2px solid rgba(255, 215, 0, 0.5);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: var(--input-bg);
+            color: var(--text-primary);
             font-family: 'Courier New', monospace;
             font-size: 1em;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         .race-count-input:focus {
             outline: none;
-            border-color: #ffd700;
+            border-color: var(--accent-color);
         }
 
         .multi-race-btn {
@@ -625,7 +694,7 @@
 
         .race-progress-indicator {
             text-align: center;
-            color: #ffd700;
+            color: var(--accent-color);
             font-size: 1.1em;
             margin-top: 10px;
             min-height: 1.5em;
@@ -647,10 +716,151 @@
         .stop-races-btn:hover {
             transform: translateY(-2px);
         }
+
+        .keyboard-shortcuts {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .keyboard-shortcuts kbd {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--accent-color);
+        }
+
+        .copy-url-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-url-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-url-btn.copied {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .sound-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .sound-toggle.active {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .achievements-section {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .achievements-title {
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .achievement-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .achievement-badge {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            cursor: help;
+        }
+
+        .achievement-badge.locked {
+            background: rgba(100, 100, 100, 0.2);
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light-mode .achievement-badge.locked {
+            background: rgba(100, 100, 100, 0.1);
+            color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .achievement-badge.unlocked {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: badgePop 0.5s ease-out;
+            border: none;
+        }
+
+        @keyframes badgePop {
+            0% {
+                transform: scale(0) rotate(-180deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
+        <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
+        <div class="theme-toggle" id="themeToggle">
+            <button class="theme-btn active" data-theme="dark">🌙</button>
+            <button class="theme-btn" data-theme="light">☀️</button>
+        </div>
         <h1>🏁 PROJECT NAME RACE 🏁</h1>
     </div>
 
@@ -680,6 +890,11 @@
                 <div class="tally-section-title">📊 Strategy Win Tallies</div>
                 <div class="strategy-tally" id="strategyTally"></div>
 
+                <div class="achievements-section">
+                    <div class="achievements-title">🏆 Achievements</div>
+                    <div class="achievement-list" id="achievementList"></div>
+                </div>
+
                 <div class="chart-section">
                     <div class="tally-section-title" style="margin-top: 0;">📈 Wins Over Time</div>
                     <div class="chart-container">
@@ -703,6 +918,15 @@
                         <button class="stop-races-btn" id="stopRacesBtn" onclick="stopMultiRace()" style="display: none;">⏹ STOP</button>
                     </div>
                     <div class="race-progress-indicator" id="raceProgressIndicator"></div>
+                </div>
+
+                <div class="keyboard-shortcuts">
+                    <strong>Shortcuts:</strong>
+                    <kbd>Space</kbd> Start Race |
+                    <kbd>R</kbd> Reset Tally |
+                    <kbd>+</kbd>/<kbd>-</kbd> Add/Remove Racers |
+                    <kbd>D</kbd> Dark Mode
+                    <button class="copy-url-btn" id="copyUrlBtn" onclick="copyShareURL()">📋 Copy URL</button>
                 </div>
             </div>
 
@@ -750,6 +974,378 @@
         let multiRaceCount = 0; // Total races to run in multi-race mode
         let multiRaceRemaining = 0; // Races remaining in current multi-race session
         let isMultiRaceMode = false;
+        let soundEnabled = false;
+        let achievements = {};
+        const ACHIEVEMENTS_KEY = 'nameRaceAchievements';
+
+        // Achievement definitions
+        const achievementDefs = {
+            underdog: { emoji: '🦸', name: 'Underdog', description: 'Win with Comeback Surge strategy' },
+            consistent: { emoji: '🎯', name: 'Consistent', description: 'Same racer wins 5 times' },
+            marathon: { emoji: '🏃', name: 'Marathon', description: 'Run 50 or more races' },
+            photoFinish: { emoji: '📸', name: 'Photo Finish', description: 'Win by less than 1% margin' },
+            speedster: { emoji: '⚡', name: 'Speedster', description: 'Fast Start/Fade wins 3 times' },
+            variety: { emoji: '🎲', name: 'Variety', description: 'All 6 strategies have won at least once' },
+            fullField: { emoji: '🏟️', name: 'Full Field', description: 'Run a race with 10 racers' },
+            lucky: { emoji: '🍀', name: 'Lucky Streak', description: 'Lucky strategy wins 3 times' }
+        };
+
+        // Load achievements from localStorage
+        function loadAchievements() {
+            try {
+                const saved = localStorage.getItem(ACHIEVEMENTS_KEY);
+                if (saved) {
+                    achievements = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('Could not load achievements:', e);
+            }
+            renderAchievements();
+        }
+
+        // Save achievements to localStorage
+        function saveAchievements() {
+            try {
+                localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(achievements));
+            } catch (e) {
+                console.warn('Could not save achievements:', e);
+            }
+        }
+
+        // Check and unlock achievements
+        function checkAchievements(winnerIndex, winnerStrategy, positions) {
+            let newAchievements = false;
+
+            // Underdog - Win with Comeback Surge (strategy 1)
+            if (winnerStrategy === 1 && !achievements.underdog) {
+                achievements.underdog = true;
+                newAchievements = true;
+            }
+
+            // Consistent - Same racer wins 5 times
+            if (!achievements.consistent && winTally[winnerIndex] >= 5) {
+                achievements.consistent = true;
+                newAchievements = true;
+            }
+
+            // Marathon - 50+ races
+            if (!achievements.marathon && raceNumber >= 50) {
+                achievements.marathon = true;
+                newAchievements = true;
+            }
+
+            // Photo Finish - Win by less than 1%
+            if (!achievements.photoFinish) {
+                const sortedPositions = [...positions].sort((a, b) => b - a);
+                if (sortedPositions.length >= 2) {
+                    const margin = sortedPositions[0] - sortedPositions[1];
+                    if (margin < 1 && sortedPositions[0] >= 100) {
+                        achievements.photoFinish = true;
+                        newAchievements = true;
+                    }
+                }
+            }
+
+            // Speedster - Fast Start/Fade wins 3 times (strategy 0)
+            if (!achievements.speedster && strategyTally[0] >= 3) {
+                achievements.speedster = true;
+                newAchievements = true;
+            }
+
+            // Variety - All 6 strategies have won
+            if (!achievements.variety) {
+                const allStrategiesWon = strategyTally.every(count => count > 0);
+                if (allStrategiesWon) {
+                    achievements.variety = true;
+                    newAchievements = true;
+                }
+            }
+
+            // Full Field - Race with 10 racers
+            if (!achievements.fullField && numRacers === 10) {
+                achievements.fullField = true;
+                newAchievements = true;
+            }
+
+            // Lucky Streak - Lucky strategy wins 3 times (strategy 5)
+            if (!achievements.lucky && strategyTally[5] >= 3) {
+                achievements.lucky = true;
+                newAchievements = true;
+            }
+
+            if (newAchievements) {
+                saveAchievements();
+                renderAchievements();
+                playWinnerCelebration(); // Extra celebration for achievement!
+            }
+        }
+
+        // Render achievements UI
+        function renderAchievements() {
+            const container = document.getElementById('achievementList');
+            if (!container) return;
+
+            container.innerHTML = Object.keys(achievementDefs).map(key => {
+                const def = achievementDefs[key];
+                const unlocked = achievements[key];
+                return `<div class="achievement-badge ${unlocked ? 'unlocked' : 'locked'}" title="${def.description}">
+                    ${def.emoji} ${def.name}
+                </div>`;
+            }).join('');
+        }
+
+        // Web Audio API for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playStartFanfare() {
+            if (!soundEnabled) return;
+            // Rising three-note fanfare
+            const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    osc.type = 'triangle';
+                    gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.2);
+                }, i * 100);
+            });
+        }
+
+        function playWinnerCelebration() {
+            if (!soundEnabled) return;
+            // Triumphant chord with arpeggio
+            const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.12, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.4);
+                }, i * 80);
+            });
+        }
+
+        function playClick() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 1000;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.05);
+        }
+
+        function playRaceTick() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 600 + Math.random() * 200;
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.02);
+        }
+
+        // localStorage key
+        const STORAGE_KEY = 'nameRaceState';
+
+        // Theme handling
+        function initTheme() {
+            const savedTheme = localStorage.getItem('nameRaceTheme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            localStorage.setItem('nameRaceTheme', theme);
+        }
+
+        // Initialize theme toggle and sound toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', (e) => {
+                if (e.target.classList.contains('theme-btn')) {
+                    applyTheme(e.target.dataset.theme);
+                    playClick();
+                }
+            });
+            initTheme();
+
+            // Sound toggle
+            const soundToggle = document.getElementById('soundToggle');
+            soundToggle.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+                soundToggle.classList.toggle('active', soundEnabled);
+                if (soundEnabled) playClick();
+            });
+        });
+
+        // Save state to localStorage
+        function saveState() {
+            const state = {
+                numRacers,
+                names,
+                selectedRacerEmoji,
+                winTally,
+                strategyTally,
+                winHistory,
+                raceNumber
+            };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save state to localStorage:', e);
+            }
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return false;
+
+                const state = JSON.parse(saved);
+                if (state.numRacers) numRacers = state.numRacers;
+                if (state.names) names = [...state.names];
+                if (state.selectedRacerEmoji) selectedRacerEmoji = state.selectedRacerEmoji;
+                if (state.winTally) winTally = [...state.winTally];
+                if (state.strategyTally) strategyTally = [...state.strategyTally];
+                if (state.winHistory) winHistory = [...state.winHistory];
+                if (state.raceNumber !== undefined) raceNumber = state.raceNumber;
+
+                return true;
+            } catch (e) {
+                console.warn('Could not load state from localStorage:', e);
+                return false;
+            }
+        }
+
+        // URL hash sharing
+        function updateURLHash() {
+            const params = new URLSearchParams();
+            params.set('racers', numRacers);
+            params.set('names', names.join(','));
+            params.set('emoji', selectedRacerEmoji);
+            params.set('wins', winTally.join(','));
+            params.set('stratWins', strategyTally.join(','));
+            window.location.hash = params.toString();
+        }
+
+        function loadFromURLHash() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return false;
+
+            try {
+                const params = new URLSearchParams(hash);
+
+                if (params.has('racers')) {
+                    numRacers = Math.max(2, Math.min(10, parseInt(params.get('racers')) || 3));
+                }
+                if (params.has('names')) {
+                    const loadedNames = params.get('names').split(',');
+                    names = [];
+                    for (let i = 0; i < numRacers; i++) {
+                        names.push(loadedNames[i] || DEFAULT_NAMES[i] || `Racer ${i + 1}`);
+                    }
+                }
+                if (params.has('emoji')) {
+                    selectedRacerEmoji = params.get('emoji');
+                }
+                if (params.has('wins')) {
+                    const loadedWins = params.get('wins').split(',').map(n => parseInt(n) || 0);
+                    winTally = [];
+                    for (let i = 0; i < numRacers; i++) {
+                        winTally.push(loadedWins[i] || 0);
+                    }
+                } else {
+                    winTally = Array(numRacers).fill(0);
+                }
+                if (params.has('stratWins')) {
+                    const loadedStratWins = params.get('stratWins').split(',').map(n => parseInt(n) || 0);
+                    strategyTally = [];
+                    for (let i = 0; i < strategyNames.length; i++) {
+                        strategyTally.push(loadedStratWins[i] || 0);
+                    }
+                }
+
+                positions = Array(numRacers).fill(0);
+                previousNames = [...names];
+                // Reset chart when loading from URL (no history in URL)
+                winHistory = [];
+                raceNumber = 0;
+
+                return true;
+            } catch (e) {
+                console.warn('Could not load from URL hash:', e);
+                return false;
+            }
+        }
+
+        // Copy share URL to clipboard
+        function copyShareURL() {
+            updateURLHash();
+            const url = window.location.href;
+
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('copyUrlBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const btn = document.getElementById('copyUrlBtn');
+                    btn.textContent = '✅ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '📋 Copy URL';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                } catch (e) {
+                    console.warn('Copy failed:', e);
+                }
+                document.body.removeChild(textArea);
+            });
+        }
 
         function initializeRacers(count) {
             numRacers = Math.max(2, Math.min(count, 10)); // Min 2, max 10
@@ -785,6 +1381,7 @@
             renderRacers();
             updateStrategyTallyDisplay();
             updateWinsChart();
+            saveState();
         }
 
         function removeRacer() {
@@ -804,6 +1401,7 @@
             renderRacers();
             updateStrategyTallyDisplay();
             updateWinsChart();
+            saveState();
         }
 
         function renderRacers() {
@@ -955,6 +1553,9 @@
                 positions[i] = newPositions[i];
                 document.getElementById(`progress-${i}`).style.width = positions[i] + '%';
             }
+
+            // Play race tick sound occasionally (every 4th update to avoid too much noise)
+            if (Math.random() < 0.25) playRaceTick();
 
             // Check for winners AFTER all positions are updated
             // If multiple racers finish in the same tick, pick one randomly for fairness
@@ -1113,6 +1714,7 @@
                 wins: [...winTally]
             });
             updateWinsChart();
+            saveState();
         }
 
         function resetTally() {
@@ -1123,6 +1725,7 @@
             updateTallyDisplay();
             updateStrategyTallyDisplay();
             updateWinsChart();
+            saveState();
         }
 
         function checkNameChanges() {
@@ -1141,6 +1744,7 @@
                 previousNames = [...names];
                 updateTallyDisplay();
                 updateWinsChart();
+                saveState();
             }
         }
 
@@ -1178,6 +1782,12 @@
             const winnerStrategy = strategies[winnerIndex];
             strategyTally[winnerStrategy]++;
             updateStrategyTallyDisplay();
+
+            // Check for achievements
+            checkAchievements(winnerIndex, winnerStrategy, positions);
+
+            // Play winner celebration
+            playWinnerCelebration();
 
             document.getElementById('winnerText').innerHTML =
                 `🎉 WINNER: <span style="color: ${winnerColor}">${winnerName}</span> 🎉`;
@@ -1262,6 +1872,9 @@
                 }
             }
 
+            // Play start fanfare
+            playStartFanfare();
+
             // Start race
             raceInterval = setInterval(updateRace, 50);
         }
@@ -1338,20 +1951,83 @@
                     racerNameEl.innerHTML = `${nameText} <span class="emoji">${selectedRacerEmoji}</span>`;
                 }
             }
+            saveState();
         }
 
         // Initialize on load
         window.addEventListener('load', () => {
-            initializeRacers(3);
-            // Set default emoji selection
-            document.querySelector('.emoji-option[data-emoji="🐕"]').classList.add('selected');
-            // Initialize chart
-            updateWinsChart();
+            // Try URL hash first (for shared links), then localStorage
+            const hasURLState = loadFromURLHash();
+            const hasLocalState = !hasURLState && loadState();
+
+            if (hasURLState || hasLocalState) {
+                // Use loaded state
+                previousNames = [...names];
+                positions = Array(numRacers).fill(0);
+                renderRacers();
+                updateTallyDisplay();
+                updateStrategyTallyDisplay();
+                updateWinsChart();
+                // Set emoji selection from saved state
+                document.querySelectorAll('.emoji-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                const emojiOption = document.querySelector(`.emoji-option[data-emoji="${selectedRacerEmoji}"]`);
+                if (emojiOption) emojiOption.classList.add('selected');
+            } else {
+                // Initialize fresh
+                initializeRacers(3);
+                // Set default emoji selection
+                document.querySelector('.emoji-option[data-emoji="🐕"]').classList.add('selected');
+                // Initialize chart
+                updateWinsChart();
+            }
+
+            // Load achievements
+            loadAchievements();
         });
 
         // Redraw chart on window resize
         window.addEventListener('resize', () => {
             updateWinsChart();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger if typing in input
+            if (e.target.tagName === 'INPUT') return;
+
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    if (isMultiRaceMode) {
+                        stopMultiRace();
+                    } else if (!raceFinished && raceInterval) {
+                        // Race in progress - do nothing (can't stop mid-race)
+                    } else {
+                        startRace();
+                    }
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    resetTally();
+                    break;
+                case '+':
+                case '=':
+                    e.preventDefault();
+                    addRacer();
+                    break;
+                case '-':
+                case '_':
+                    e.preventDefault();
+                    removeRacer();
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    const currentTheme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+                    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+                    break;
+            }
         });
     </script>
 </body>
