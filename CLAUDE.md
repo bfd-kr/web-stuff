@@ -52,6 +52,12 @@ The project is designed for easy expansion with additional static web applicatio
 - **Wins Over Time Chart**: Visual line chart tracking cumulative wins per racer
 - **Win Tracking**: Per-racer tallies and per-strategy statistics
 - **Fair Racing**: Simultaneous finish detection, no positional bias
+- **Dark/Light Mode**: Toggle between themes with CSS variables, persists to localStorage
+- **Keyboard Shortcuts**: Space (start), R (reset tally), +/- (add/remove racers), D (dark mode)
+- **Sound Effects**: Web Audio API sounds for race start, winner celebration, and UI clicks
+- **URL Sharing**: Share race configuration via URL hash parameters
+- **localStorage Persistence**: Saves racer names, emoji, tallies, and chart history
+- **Achievement System**: 8 unlockable achievements (Underdog, Consistent, Marathon, Photo Finish, Speedster, Variety, Full Field, Lucky Streak)
 
 ### Strategy Balance (Realistic Meta-Game)
 
@@ -112,10 +118,13 @@ When modifying race strategies, validate changes across all field sizes:
   - Very Expensive ($10K-100K): Teslas, speedboats, Porsches
   - Insane ($100K+): houses, private jets, SpaceX seats
 - **URL sharing**: Share meeting state via URL hash parameters
+- **Copy URL button**: One-click copy with Clipboard API and visual feedback
 - **Dark mode**: Toggle between light and dark themes
 - **Keyboard shortcuts**: Space (start/stop), R (reset), +/- (people), D (dark mode)
 - **Achievements**: Unlockable badges for meeting milestones
 - **Money animation**: Falling money that scales with burn rate
+- **Meeting History**: Tracks last 10 meetings in localStorage with date, duration, people, and cost
+- **CSV Export**: Export meeting history to CSV file
 
 ## Development Workflow
 
@@ -142,42 +151,131 @@ When modifying race strategies, validate changes across all field sizes:
 - **Merge commits and squash merges are disabled** - use rebase merging only
 - PRs are auto-deployed to GitHub Pages via GitHub Actions
 
+### CRITICAL: Atomic Commits Per Step
+
+**EVERY STEP IN A PLAN = ONE COMMIT.** This is non-negotiable.
+
+When implementing a plan with multiple steps:
+1. Complete step 1
+2. **IMMEDIATELY commit step 1** before starting step 2
+3. Complete step 2
+4. **IMMEDIATELY commit step 2** before starting step 3
+5. Repeat for ALL steps
+6. Push, create PR, merge, deploy
+
+**DO NOT** batch multiple steps into one commit. Each logical change gets its own commit.
+
+#### Examples
+
+**8-step plan = 8 commits:**
+```
+✅ CORRECT:
+commit 1: "Add keyboard shortcuts to Name Race"
+commit 2: "Add localStorage persistence to Name Race"
+commit 3: "Add Copy URL button to Meeting Cost Calculator"
+commit 4: "Add dark mode toggle to Name Race"
+commit 5: "Add URL sharing to Name Race"
+commit 6: "Add sound effects to Name Race"
+commit 7: "Add session history to Meeting Cost Calculator"
+commit 8: "Add achievement system to Name Race"
+
+❌ WRONG:
+commit 1: "Add enhancements to Meeting Cost Calculator"
+commit 2: "Add enhancements to Name Race"
+(This batches 8 steps into 2 commits - FAIL)
+```
+
+**Why this matters:**
+- Easier to review changes
+- Easier to revert specific features
+- Easier to bisect bugs
+- Clean git history
+- Each commit is deployable
+
 ### Making Changes
+
 1. Create a feature branch: `git checkout -b feature/my-feature`
-2. Make atomic commits (one logical change per commit)
+2. For EACH step in your plan:
+   - Implement the step
+   - Stage the changes: `git add <specific-files>`
+   - Commit immediately: `git commit -m "Step description"`
 3. Push to origin: `git push -u origin feature/my-feature`
 4. Create PR: `gh pr create --title "Title" --body "Description"`
 5. Merge with rebase: `gh pr merge <pr-number> --rebase`
-6. Clean up: `git checkout main && git pull && git branch -d feature/my-feature`
+6. Clean up: `git checkout main && git pull && git branch -D feature/my-feature`
 
 ### Commit Guidelines
-- **Atomic commits**: Each commit should represent one logical change
+- **Atomic commits**: Each commit = ONE logical change = ONE plan step
   - ✅ Good: "Add turtle emoji to racer options"
   - ✅ Good: "Fix strategy balance for 6-racer races"
   - ❌ Bad: "Add turtle, fix balance, update docs" (should be 3 commits)
+- **Commit IMMEDIATELY**: After completing each step, commit before starting the next
 - **Descriptive messages**: Explain what and why, not just how
 - **Co-authorship**: When AI-assisted, include: `Co-Authored-By: Claude <noreply@anthropic.com>`
 
-### Example PR Workflow
+### Complete PR Workflow Example
+
+For a 3-step plan (add feature A, add feature B, update docs):
+
 ```bash
-# Create branch and make changes
-git checkout -b fix/strategy-balance
-# ... make changes ...
-git add webapp/static/name-race.html
-git commit -m "Fix strategy balance for spicy racing strategies"
+# 1. Create feature branch
+git checkout -b feature/my-feature
 
-# Push and create PR
-git push -u origin fix/strategy-balance
-gh pr create --title "Fix strategy balance" --body "## Summary\n- Fixed balance\n\n## Test plan\n- Ran simulations"
+# 2. Implement step 1, commit IMMEDIATELY
+# ... make changes for feature A ...
+git add webapp/static/app.html
+git commit -m "Add feature A to app
 
-# Merge (after review)
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 3. Implement step 2, commit IMMEDIATELY
+# ... make changes for feature B ...
+git add webapp/static/app.html
+git commit -m "Add feature B to app
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 4. Implement step 3, commit IMMEDIATELY
+# ... update docs ...
+git add CLAUDE.md
+git commit -m "Update documentation for features A and B
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 5. Push branch
+git push -u origin feature/my-feature
+
+# 6. Create PR
+gh pr create --title "Add features A and B" --body "## Summary
+- Added feature A
+- Added feature B
+- Updated docs
+
+## Test plan
+- [ ] Test feature A
+- [ ] Test feature B
+
+🤖 Generated with Claude Code"
+
+# 7. Merge with rebase
 gh pr merge <pr-number> --rebase
 
-# Clean up
+# 8. Clean up local
 git checkout main
-git reset --hard origin/main
-git branch -d fix/strategy-balance
+git pull
+git branch -D feature/my-feature
+
+# 9. Verify deployment
+gh run list --limit 1
 ```
+
+### Checklist Before Moving to Next Step
+
+Before starting the next step in a plan, verify:
+- [ ] Current step is complete and tested
+- [ ] Changes are staged (`git add`)
+- [ ] Commit is made (`git commit`)
+- [ ] Commit message describes THIS step only
 
 ## Future Enhancements
 
