@@ -143,6 +143,62 @@
             );
         }
 
+        /* Strategy Visual Effects */
+        @keyframes fastStartGlow {
+            0%, 100% { box-shadow: 0 0 10px 2px rgba(255, 100, 0, 0.8); }
+            50% { box-shadow: 0 0 20px 5px rgba(255, 150, 0, 1); }
+        }
+
+        @keyframes comebackGlow {
+            0%, 100% { box-shadow: 0 0 10px 2px rgba(0, 200, 255, 0.8); }
+            50% { box-shadow: 0 0 25px 8px rgba(0, 255, 255, 1); }
+        }
+
+        @keyframes inconsistentShake {
+            0%, 100% { transform: translateY(0); }
+            25% { transform: translateY(-3px); }
+            75% { transform: translateY(3px); }
+        }
+
+        @keyframes sprintPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        @keyframes luckySparkle {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5) drop-shadow(0 0 8px gold); }
+        }
+
+        .strategy-fast-start .racer-progress {
+            animation: fastStartGlow 0.4s ease-in-out infinite;
+        }
+
+        .strategy-comeback .racer-progress {
+            animation: comebackGlow 0.5s ease-in-out infinite;
+        }
+
+        .strategy-steady .racer-progress {
+            box-shadow: 0 0 8px 2px rgba(100, 255, 100, 0.5);
+        }
+
+        .strategy-inconsistent .racer-progress {
+            animation: inconsistentShake 0.15s ease-in-out infinite;
+        }
+
+        .strategy-sprint .racer-progress {
+            animation: sprintPulse 0.3s ease-in-out infinite;
+        }
+
+        .strategy-lucky .racer-progress {
+            animation: luckySparkle 0.6s ease-in-out infinite;
+        }
+
+        .strategy-lucky.lucky-moment .racer-progress {
+            animation: luckySparkle 0.15s ease-in-out infinite;
+            filter: brightness(1.8) drop-shadow(0 0 15px gold);
+        }
+
         .controls {
             text-align: center;
             margin: 30px 0;
@@ -686,7 +742,7 @@
         let raceFinished = false;
         let winner = null;
         let winTally = [];
-        let strategyTally = [0, 0, 0, 0, 0, 0]; // Track wins for each strategy
+        let strategyTally = Array(strategyNames.length).fill(0); // Track wins for each strategy
         let previousNames = [];
         let selectedRacerEmoji = '🐕'; // Default to dog
         let winHistory = []; // Track cumulative wins after each race: [{race: 1, wins: [0, 1, 0]}, ...]
@@ -815,7 +871,7 @@
         }
 
         function getRandomStrategy() {
-            return Math.floor(Math.random() * 6);
+            return Math.floor(Math.random() * strategyNames.length);
         }
 
         function calculateSpeed(strategy, progress) {
@@ -1065,7 +1121,7 @@
 
         function resetTally() {
             winTally = Array(numRacers).fill(0);
-            strategyTally = [0, 0, 0, 0, 0, 0];
+            strategyTally = Array(strategyNames.length).fill(0);
             winHistory = [];
             raceNumber = 0;
             updateTallyDisplay();
@@ -1194,10 +1250,20 @@
                 strategies.push(getRandomStrategy());
             }
 
-            // Show strategies
+            // Show strategies and apply visual effect classes
+            const strategyClasses = ['strategy-fast-start', 'strategy-comeback', 'strategy-steady',
+                                     'strategy-inconsistent', 'strategy-sprint', 'strategy-lucky'];
             for (let i = 0; i < numRacers; i++) {
                 document.getElementById(`strategy-${i}`).textContent = strategyNames[strategies[i]];
                 document.getElementById(`progress-${i}`).style.width = '0%';
+
+                // Apply strategy visual effect class
+                const racerEl = document.querySelector(`.racer-${i}`);
+                strategyClasses.forEach(cls => racerEl.classList.remove(cls));
+                racerEl.classList.remove('lucky-moment');
+                if (strategies[i] < strategyClasses.length) {
+                    racerEl.classList.add(strategyClasses[strategies[i]]);
+                }
             }
 
             // Start race
