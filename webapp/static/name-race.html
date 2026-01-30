@@ -517,6 +517,80 @@
             font-size: 1.1em;
             text-align: center;
         }
+
+        .multi-race-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .race-count-input {
+            width: 60px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .race-count-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .multi-race-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .multi-race-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .multi-race-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .race-progress-indicator {
+            text-align: center;
+            color: #ffd700;
+            font-size: 1.1em;
+            margin-top: 10px;
+            min-height: 1.5em;
+        }
+
+        .stop-races-btn {
+            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stop-races-btn:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -564,6 +638,15 @@
                 <div class="controls">
                     <button class="start-btn" id="startBtn" onclick="startRace()">START RACE</button>
                     <button class="reset-tally-btn" onclick="resetTally()">Reset Win Tally</button>
+
+                    <div class="multi-race-controls">
+                        <span>Run</span>
+                        <input type="number" id="raceCountInput" class="race-count-input" value="10" min="1" max="100">
+                        <span>races:</span>
+                        <button class="multi-race-btn" id="multiRaceBtn" onclick="startMultiRace()">▶ GO</button>
+                        <button class="stop-races-btn" id="stopRacesBtn" onclick="stopMultiRace()" style="display: none;">⏹ STOP</button>
+                    </div>
+                    <div class="race-progress-indicator" id="raceProgressIndicator"></div>
                 </div>
             </div>
 
@@ -606,6 +689,9 @@
         let selectedRacerEmoji = '🐕'; // Default to dog
         let winHistory = []; // Track cumulative wins after each race: [{race: 1, wins: [0, 1, 0]}, ...]
         let raceNumber = 0;
+        let multiRaceCount = 0; // Total races to run in multi-race mode
+        let multiRaceRemaining = 0; // Races remaining in current multi-race session
+        let isMultiRaceMode = false;
 
         function initializeRacers(count) {
             numRacers = Math.max(2, Math.min(count, 10)); // Min 2, max 10
@@ -1040,8 +1126,27 @@
 
             document.getElementById('podium').innerHTML = podiumHTML;
             document.getElementById('winnerAnnouncement').classList.add('show');
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('startBtn').textContent = 'RACE AGAIN';
+
+            // Check if we're in multi-race mode
+            if (isMultiRaceMode && multiRaceRemaining > 0) {
+                multiRaceRemaining--;
+                updateMultiRaceProgress();
+
+                if (multiRaceRemaining > 0) {
+                    // Brief delay then start next race
+                    setTimeout(() => {
+                        if (isMultiRaceMode) { // Check again in case stopped
+                            startRace();
+                        }
+                    }, 300);
+                } else {
+                    // Multi-race complete
+                    finishMultiRace();
+                }
+            } else {
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtn').textContent = 'RACE AGAIN';
+            }
         }
 
         function startRace() {
@@ -1075,6 +1180,61 @@
 
             // Start race
             raceInterval = setInterval(updateRace, 50);
+        }
+
+        function startMultiRace() {
+            const countInput = document.getElementById('raceCountInput');
+            const count = parseInt(countInput.value) || 10;
+
+            if (count < 1 || count > 100) {
+                alert('Please enter a number between 1 and 100');
+                return;
+            }
+
+            multiRaceCount = count;
+            multiRaceRemaining = count;
+            isMultiRaceMode = true;
+
+            // Update UI
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('multiRaceBtn').style.display = 'none';
+            document.getElementById('stopRacesBtn').style.display = 'inline-block';
+            countInput.disabled = true;
+
+            updateMultiRaceProgress();
+            startRace();
+        }
+
+        function stopMultiRace() {
+            isMultiRaceMode = false;
+            multiRaceRemaining = 0;
+            finishMultiRace();
+        }
+
+        function finishMultiRace() {
+            isMultiRaceMode = false;
+
+            // Update UI
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = 'RACE AGAIN';
+            document.getElementById('multiRaceBtn').style.display = 'inline-block';
+            document.getElementById('stopRacesBtn').style.display = 'none';
+            document.getElementById('raceCountInput').disabled = false;
+
+            const completed = multiRaceCount - multiRaceRemaining;
+            document.getElementById('raceProgressIndicator').textContent =
+                `✅ Completed ${completed} race${completed !== 1 ? 's' : ''}!`;
+
+            // Clear message after 3 seconds
+            setTimeout(() => {
+                document.getElementById('raceProgressIndicator').textContent = '';
+            }, 3000);
+        }
+
+        function updateMultiRaceProgress() {
+            const completed = multiRaceCount - multiRaceRemaining;
+            document.getElementById('raceProgressIndicator').textContent =
+                `🏁 Race ${completed + 1} of ${multiRaceCount}...`;
         }
 
         function selectEmoji(emoji) {
