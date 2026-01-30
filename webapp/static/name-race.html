@@ -878,65 +878,61 @@
             const progressPct = progress;
             let advance = 0;
 
-            // EXTREME profiles - more dramatic differences while maintaining balance
-            // All strategies target ~3.5 weighted average
+            // ALL strategies target ~27 ticks (3.7 avg speed)
+            // Dramatic CHARACTER differences, similar FINISH TIMES
             switch(strategy) {
-                case 0: // Fast start, fade finish - EXTREME
-                    // Weighted: 0.4*5.0 + 0.3*3.5 + 0.15*2.5 + 0.15*1.5 = 3.65
+                case 0: // Fast start, fade finish
+                    // Early lead, significant fade - still dramatic but balanced
                     if (progressPct < 40) {
-                        advance = Math.random() * 2 + 4; // 4-6 (avg 5.0) ZOOM!
+                        advance = Math.random() * 2 + 3.5; // 3.5-5.5 (avg 4.5) ZOOM!
                     } else if (progressPct < 70) {
+                        advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8)
+                    } else if (progressPct < 85) {
                         advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5)
-                    } else if (progressPct < 85) {
-                        advance = Math.random() * 2 + 1.5; // 1.5-3.5 (avg 2.5)
                     } else {
-                        advance = Math.random() * 2 + 0.5; // 0.5-2.5 (avg 1.5) crawling...
+                        advance = Math.random() * 2 + 1.5; // 1.5-3.5 (avg 2.5) fading!
                     }
                     break;
 
-                case 1: // Comeback surge - EXTREME
-                    // Weighted: 0.4*2.0 + 0.3*3.0 + 0.15*4.5 + 0.15*6.0 = 3.275
+                case 1: // Comeback surge
+                    // Behind early, dramatic finish - but not too far behind
                     if (progressPct < 40) {
-                        advance = Math.random() * 2 + 1; // 1-3 (avg 2.0) sluggish start
+                        advance = Math.random() * 2 + 2.2; // 2.2-4.2 (avg 3.2) warming up
                     } else if (progressPct < 70) {
-                        advance = Math.random() * 2 + 2; // 2-4 (avg 3.0)
+                        advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8) building
                     } else if (progressPct < 85) {
-                        advance = Math.random() * 3 + 3; // 3-6 (avg 4.5) building...
+                        advance = Math.random() * 2 + 3.5; // 3.5-5.5 (avg 4.5) surging
                     } else {
-                        advance = Math.random() * 4 + 4; // 4-8 (avg 6.0) SURGE!!!
+                        advance = Math.random() * 2 + 4.8; // 4.8-6.8 (avg 5.8) SURGE!
                     }
                     break;
 
-                case 2: // Steady pace - reliable
-                    // Weighted: 3.5, very low variance
-                    advance = Math.random() * 1.5 + 2.75; // 2.75-4.25 (avg 3.5)
+                case 2: // Steady pace - the reliable baseline
+                    advance = Math.random() * 2 + 2.8; // 2.8-4.8 (avg 3.8)
                     break;
 
-                case 3: // Inconsistent - WILD
-                    // Weighted: 3.5, EXTREME variance
-                    advance = Math.random() * 6 + 0.5; // 0.5-6.5 (avg 3.5)
+                case 3: // Inconsistent - exciting variance
+                    advance = Math.random() * 5 + 1.2; // 1.2-6.2 (avg 3.7)
                     break;
 
-                case 4: // Sprint/Rest - bursts of speed
-                    // Alternates between fast and slow based on "ticks"
-                    // Uses progress % to create sprint/rest cycles
-                    const sprintPhase = Math.floor(progressPct / 10) % 2 === 0;
+                case 4: // Sprint/Rest - dramatic bursts
+                    // Longer cycles, more visible pattern
+                    const sprintPhase = Math.floor(progressPct / 15) % 2 === 0;
                     if (sprintPhase) {
-                        advance = Math.random() * 2 + 4.5; // 4.5-6.5 (avg 5.5) SPRINT!
+                        advance = Math.random() * 2 + 4; // 4-6 (avg 5.0) SPRINT!
                     } else {
-                        advance = Math.random() * 2 + 0.5; // 0.5-2.5 (avg 1.5) resting...
+                        advance = Math.random() * 2 + 1.8; // 1.8-3.8 (avg 2.8) resting
                     }
-                    // Overall avg: ~3.5
+                    // Overall: ~3.9 avg
                     break;
 
-                case 5: // Lucky - normal with rare big jumps
-                    // Base speed with 15% chance of big luck
-                    if (Math.random() < 0.15) {
-                        advance = Math.random() * 4 + 6; // 6-10 (avg 8) LUCKY!!!
+                case 5: // Lucky - suspenseful randomness
+                    if (Math.random() < 0.10) {
+                        advance = Math.random() * 3 + 5; // 5-8 (avg 6.5) LUCKY!
                     } else {
-                        advance = Math.random() * 2 + 2; // 2-4 (avg 3) normal
+                        advance = Math.random() * 2 + 2.5; // 2.5-4.5 (avg 3.5) normal
                     }
-                    // Overall avg: 0.15*8 + 0.85*3 = 1.2 + 2.55 = 3.75
+                    // Overall: 0.10*6.5 + 0.90*3.5 = 3.8 avg
                     break;
             }
 
