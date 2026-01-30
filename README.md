@@ -26,18 +26,28 @@ An interactive racing game for deciding between project names or team options in
 
 **Features:**
 - **Customizable Racers**: 2-10 racers with editable names (defaults: SynthLoad, BenchPress, StressKit)
-- **Dynamic Racing Strategies**:
-  - 🚀 Fast Start/Fade
-  - ⚡ Comeback Surge
-  - 📈 Steady Pace
-  - 🎲 Inconsistent
-- **Racer Type Selection**: Choose between Dogs 🐕, Horses 🐎, or Camels 🐫
+- **Racer Emojis**: Dogs 🐕, Horses 🐎, Camels 🐫, Turtles 🐢
+- **6 Dynamic Racing Strategies** (each with unique visual effects):
+  - 🚀 Fast Start/Fade - Leads early, fades at the end (golden glow)
+  - ⚡ Comeback Surge - Slow start, dramatic finish (electric pulse)
+  - 📈 Steady Pace - Consistent speed throughout (gentle pulse)
+  - 🎲 Inconsistent - Wild variance, unpredictable (shake effect)
+  - 💨 Sprint/Rest - Alternating bursts of speed (blur effect)
+  - 🍀 Lucky - Normal speed with rare big jumps (sparkle effect)
+- **Consecutive Race Mode**: Run multiple races automatically (1-100) with stop button
+- **Wins Over Time Chart**: Visual line chart tracking cumulative wins per racer
 - **Win Tracking**:
   - Per-racer win tallies
   - Per-strategy win statistics
   - Auto-reset when names change
-- **Fair Racing**: True randomization with simultaneous finish detection
+- **Fair Racing**: True randomization with simultaneous finish detection, no positional bias
 - **Responsive Layout**: Winner panel moves to sidebar on wider screens
+
+**Strategy Balance:**
+The game features a realistic meta-game where strategy effectiveness varies by field size:
+- Small groups (2-3): Consistent strategies like Fast Start dominate
+- Medium groups (6-7): Most balanced - any strategy can win
+- Large groups (8-10): High variance strategies benefit from chaos
 
 Perfect for making decisions, team building, or just having fun!
 
@@ -165,6 +175,24 @@ Then use:
 docker-compose up -d    # Start
 docker-compose down     # Stop
 ```
+
+## Contributing
+
+### Repository Rules
+- All changes must go through **pull requests** (direct pushes to main are blocked)
+- Use **rebase merging** only (merge commits and squash are disabled)
+- Make **atomic commits** (one logical change per commit)
+
+### Workflow
+1. Fork/clone the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes with atomic commits
+4. Push and create a PR: `gh pr create`
+5. After approval, merge with: `gh pr merge --rebase`
+
+### Deployment
+- PRs merged to `main` are automatically deployed to GitHub Pages
+- Live site: https://bfd-kr.github.io/web-stuff/
 
 ## License
 
