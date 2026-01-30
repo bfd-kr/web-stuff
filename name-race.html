@@ -54,22 +54,30 @@
             text-align: center;
             margin-bottom: 40px;
             border: 3px solid var(--accent-color);
-            padding: 20px;
+            padding: 15px 20px;
             border-radius: 10px;
             background: rgba(255, 215, 0, 0.1);
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .header h1 {
             font-size: 2.5em;
             color: var(--accent-color);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: var(--container-bg);
             border: 2px solid var(--border-color);
             border-radius: 20px;
@@ -762,9 +770,6 @@
         }
 
         .sound-toggle {
-            position: absolute;
-            top: 15px;
-            left: 15px;
             background: var(--container-bg);
             border: 2px solid var(--border-color);
             border-radius: 50%;
@@ -856,10 +861,12 @@
 </head>
 <body>
     <div class="header">
-        <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
-        <div class="theme-toggle" id="themeToggle">
-            <button class="theme-btn active" data-theme="dark">🌙</button>
-            <button class="theme-btn" data-theme="light">☀️</button>
+        <div class="header-controls">
+            <div class="sound-toggle" id="soundToggle" title="Toggle Sound Effects">🔇</div>
+            <div class="theme-toggle" id="themeToggle">
+                <button class="theme-btn active" data-theme="dark">🌙</button>
+                <button class="theme-btn" data-theme="light">☀️</button>
+            </div>
         </div>
         <h1>🏁 PROJECT NAME RACE 🏁</h1>
     </div>
