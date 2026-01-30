@@ -738,6 +738,28 @@
             font-size: 11px;
         }
 
+        .copy-url-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .copy-url-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-url-btn.copied {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
         .additional-costs {
             margin-top: 10px;
             padding: 15px;
@@ -770,6 +792,127 @@
             color: var(--text-secondary);
             margin-top: 5px;
             text-align: right;
+        }
+
+        .meeting-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--visual-bg);
+            border-radius: 8px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .history-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .history-toggle {
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .history-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .history-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .history-content.expanded {
+            max-height: 500px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 15px;
+            padding: 10px;
+            background: var(--container-bg);
+            border-radius: 6px;
+            font-size: 12px;
+            align-items: center;
+        }
+
+        .history-date {
+            color: var(--text-secondary);
+        }
+
+        .history-duration {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .history-people {
+            color: var(--text-secondary);
+        }
+
+        .history-cost {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .history-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 20px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .history-btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .history-btn-clear {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .history-btn-clear:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        .history-btn-save {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .history-btn-save:hover {
+            background: rgba(16, 185, 129, 0.4);
         }
     </style>
 </head>
@@ -923,6 +1066,22 @@
                     <div class="achievement-title">🏆 Achievements</div>
                     <div class="achievement-list" id="achievementList"></div>
                 </div>
+
+                <div class="meeting-history">
+                    <div class="history-header" onclick="toggleHistory()">
+                        <div class="history-title">📜 Meeting History</div>
+                        <button class="history-toggle" id="historyToggle">▼</button>
+                    </div>
+                    <div class="history-content" id="historyContent">
+                        <div class="history-list" id="historyList">
+                            <div class="history-empty">No saved meetings yet. Stop the timer to save a meeting.</div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="history-btn history-btn-clear" onclick="clearHistory()">🗑️ Clear History</button>
+                            <button class="history-btn history-btn-save" onclick="exportHistory()">📥 Export CSV</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -932,6 +1091,7 @@
             <kbd>R</kbd> Reset |
             <kbd>+</kbd>/<kbd>-</kbd> People |
             <kbd>D</kbd> Dark Mode
+            <button class="copy-url-btn" id="copyUrlBtn" onclick="copyShareURL()">📋 Copy URL</button>
         </div>
     </div>
 
@@ -947,6 +1107,9 @@
         let previousPeopleCount = 0;
         let selectedComparisons = [];
         let loadingFromURL = false;
+        let meetingHistory = [];
+        const HISTORY_KEY = 'meetingCostHistory';
+        const MAX_HISTORY = 10;
 
         // Elements
         const salaryInput = document.getElementById('salary');
@@ -1762,6 +1925,7 @@
             checkCompletionAchievements();
             calculateCost();
             updateURLHash();
+            addToHistory();
         }
 
         function resetTimer() {
@@ -1846,11 +2010,189 @@
         travelCostInput.addEventListener('change', updateURLHash);
         venueCostInput.addEventListener('change', updateURLHash);
 
+        // Meeting History Functions
+        function loadHistory() {
+            try {
+                const saved = localStorage.getItem(HISTORY_KEY);
+                if (saved) {
+                    meetingHistory = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('Could not load history:', e);
+            }
+            renderHistory();
+        }
+
+        function saveHistory() {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(meetingHistory));
+            } catch (e) {
+                console.warn('Could not save history:', e);
+            }
+        }
+
+        function addToHistory() {
+            if (seconds < 60) return; // Don't save meetings under 1 minute
+
+            const meeting = {
+                date: new Date().toISOString(),
+                duration: seconds,
+                people: parseInt(peopleInput.value) || 0,
+                rate: parseFloat(salaryInput.value) || 0,
+                cost: getCurrentCost(),
+                travelCost: getTravelCost(),
+                venueCost: getVenueCost()
+            };
+
+            meetingHistory.unshift(meeting);
+
+            // Keep only the last MAX_HISTORY meetings
+            if (meetingHistory.length > MAX_HISTORY) {
+                meetingHistory = meetingHistory.slice(0, MAX_HISTORY);
+            }
+
+            saveHistory();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+
+            if (meetingHistory.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">No saved meetings yet. Stop the timer to save a meeting.</div>';
+                return;
+            }
+
+            historyList.innerHTML = meetingHistory.map((meeting, index) => {
+                const date = new Date(meeting.date);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const durationStr = formatTime(meeting.duration);
+                const peopleStr = meeting.people + ' people';
+                const costStr = '$' + meeting.cost.toFixed(2);
+
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${dateStr}</div>
+                        <div class="history-duration">${durationStr}</div>
+                        <div class="history-people">${peopleStr}</div>
+                        <div class="history-cost">${costStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleHistory() {
+            const content = document.getElementById('historyContent');
+            const toggle = document.getElementById('historyToggle');
+            content.classList.toggle('expanded');
+            toggle.classList.toggle('expanded');
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all meeting history?')) {
+                meetingHistory = [];
+                saveHistory();
+                renderHistory();
+                playClick();
+            }
+        }
+
+        function exportHistory() {
+            if (meetingHistory.length === 0) {
+                alert('No meetings to export!');
+                return;
+            }
+
+            const headers = ['Date', 'Duration', 'People', 'Hourly Rate', 'Time Cost', 'Travel Cost', 'Venue Cost', 'Total Cost'];
+            const rows = meetingHistory.map(m => {
+                const date = new Date(m.date);
+                return [
+                    date.toISOString(),
+                    formatTime(m.duration),
+                    m.people,
+                    m.rate,
+                    (m.cost - (m.travelCost || 0) - (m.venueCost || 0)).toFixed(2),
+                    (m.travelCost || 0).toFixed(2),
+                    (m.venueCost || 0).toFixed(2),
+                    m.cost.toFixed(2)
+                ];
+            });
+
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'meeting-history.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            playChing();
+        }
+
+        function playClick() {
+            if (!soundEnabled) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.05);
+        }
+
+        // Copy URL to clipboard
+        function copyShareURL() {
+            const btn = document.getElementById('copyUrlBtn');
+            const url = window.location.href;
+
+            navigator.clipboard.writeText(url).then(() => {
+                // Success feedback
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                playChing();
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    btn.textContent = '✅ Copied!';
+                    btn.classList.add('copied');
+                    playChing();
+                    setTimeout(() => {
+                        btn.textContent = '📋 Copy URL';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                } catch (e) {
+                    btn.textContent = '❌ Failed';
+                    setTimeout(() => {
+                        btn.textContent = '📋 Copy URL';
+                    }, 2000);
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
         // Initialize
         initTheme();
         renderAchievements();
         selectRandomComparisons();
         loadFromURLHash();
+        loadHistory();
         calculateCost();
     </script>
 </body>
